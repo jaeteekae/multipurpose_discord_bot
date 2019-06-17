@@ -55,8 +55,14 @@ def generate_timestring(elapsed):
 
 def send_away_msg(mem):
     obj = data["away"][str(mem.id)]
-    timestring = generate_timestring(time.time()-obj["time"])
-    response = "**{}** is away!\n**Duration:** {}\n**Message:** {}".format(mem.display_name,timestring,obj["message"])
+    elapsed = time.time()-obj["time"]
+    timestring = generate_timestring(elapsed)
+
+    el_delta = timedelta(seconds=elapsed)
+    left_at = datetime.now() - el_delta
+    since = left_at.strftime('**%I:%M%p** on %x')
+
+    response = "**{}** is away!\n__Duration:__ {}\n__Since:__ {}\n__Message:__ {}".format(mem.display_name,timestring,since,obj["message"])
     return response
 
 ############ OUT OF OFFICE ############
@@ -78,7 +84,7 @@ async def away(ctx, *args):
     obj = {"time": now, "message": msg}
     data["away"][memid] = obj
 
-    response = 'Marking you away, {}, with the message *{}*\nWe will miss you {}'.format(ctx.author.mention, msg, emoji)
+    response = 'Marking you away, {}, with the message *"{}"*\nWe will miss you {}'.format(ctx.author.mention, msg, emoji)
     await ctx.send(response)
 
 @bot.command()

@@ -6,3 +6,6 @@ __pychache__/*
 *.pyc
 
 secret.py
+
+gcbot
+gcbot/*
