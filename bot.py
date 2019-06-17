@@ -15,10 +15,13 @@ logging.basicConfig(level=logging.INFO)
 
 TOKEN = secret.TOKEN
 PREFIX = "!"
+
 AWAY_FILE = "./away.json"
+AWAY_COLOR = 0x72FF7B
 data = {}
 
-bot = commands.Bot(command_prefix=PREFIX, case_insensitive=True)
+help_cmd = discord.ext.commands.DefaultHelpCommand(no_category="What can Apricot-Flower-Baby do for you")
+bot = commands.Bot(command_prefix=PREFIX, case_insensitive=True, help_command=help_cmd)
 
 def init():
     try:
@@ -53,6 +56,49 @@ def generate_timestring(elapsed):
 
     return(timestring)
 
+############ OUT OF OFFICE ############
+class Out_of_Office(commands.Cog, name="Out of Office"):
+    @bot.command(help="set yourself away for when people mention you in chat", 
+                 usage="<message_here>")
+    async def away(ctx, *args):
+        if not args:
+            response = '{}: plz supply a message so we know why you are away'.format(ctx.author.mention)
+            await ctx.send(response)
+            return
+        else:
+            args = " ".join(args)
+
+        emoji = get_emoji(ctx.guild, "jin_kiss")
+        response = ''
+        memid = str(ctx.author.id)
+        now = time.time()
+        msg = str(args)
+
+        obj = {"time": now, "message": msg}
+        data["away"][memid] = obj
+
+        response = 'Marking you away, {}, with the message *"{}"*\nWe will miss you {}'.format(ctx.author.mention, msg, emoji)
+        await ctx.send(response)
+
+    @bot.command(help="use to stop being away")
+    async def back(ctx):
+        memid = str(ctx.author.id)
+
+        if memid not in data["away"]:
+            emoji = get_emoji(ctx.guild, "v_derp")
+            response = "You weren't away, {} {}".format(ctx.author.mention, emoji)
+            await ctx.send(response)
+            return
+        else:
+            obj = data["away"].pop(memid)
+            now = time.time()
+            # elapsed in seconds
+            elapsed = now - obj["time"]
+            timestring = generate_timestring(elapsed)
+
+            response = "Welcome back, {}!\nYou were away for: {}".format(ctx.author.mention, timestring)
+            await ctx.send(response)
+
 def send_away_msg(mem):
     obj = data["away"][str(mem.id)]
     elapsed = time.time()-obj["time"]
@@ -62,49 +108,9 @@ def send_away_msg(mem):
     left_at = datetime.now() - el_delta
     since = left_at.strftime('**%I:%M%p** on %x')
 
-    response = "**{}** is away!\n__Duration:__ {}\n__Since:__ {}\n__Message:__ {}".format(mem.display_name,timestring,since,obj["message"])
-    return response
-
-############ OUT OF OFFICE ############
-@bot.command()
-async def away(ctx, *args):
-    if not args:
-        response = '{}: plz supply a message so we know why you are away'.format(ctx.author.mention)
-        await ctx.send(response)
-        return
-    else:
-        args = " ".join(args)
-
-    emoji = get_emoji(ctx.guild, "jin_kiss")
-    response = ''
-    memid = str(ctx.author.id)
-    now = time.time()
-    msg = str(args)
-
-    obj = {"time": now, "message": msg}
-    data["away"][memid] = obj
-
-    response = 'Marking you away, {}, with the message *"{}"*\nWe will miss you {}'.format(ctx.author.mention, msg, emoji)
-    await ctx.send(response)
-
-@bot.command()
-async def back(ctx):
-    memid = str(ctx.author.id)
-
-    if memid not in data["away"]:
-        emoji = get_emoji(ctx.guild, "v_derp")
-        response = "You weren't away, {} {}".format(ctx.author.mention, emoji)
-        await ctx.send(response)
-        return
-    else:
-        obj = data["away"].pop(memid)
-        now = time.time()
-        # elapsed in seconds
-        elapsed = now - obj["time"]
-        timestring = generate_timestring(elapsed)
-
-        response = "Welcome back, {}!\nYou were away for: {}".format(ctx.author.mention, timestring)
-        await ctx.send(response)
+    titletxt = "**{}** is away!".format(mem.display_name)
+    responsetxt = "__Duration:__ {}\n__Since:__ {}\n__Message:__ {}".format(timestring,since,obj["message"])
+    return(titletxt, responsetxt)
 
 ##### GENERAL MESSAGE HANDLING #####
 @bot.event
@@ -114,7 +120,9 @@ async def on_message(message):
 
     for ment in message.mentions:
         if str(ment.id) in data["away"]:
-            await message.channel.send(send_away_msg(ment))
+            title,desc = send_away_msg(ment)
+            emb = discord.Embed(title=title,description=desc,color=AWAY_COLOR)
+            await message.channel.send(embed=emb)
 
     await bot.process_commands(message)
 
