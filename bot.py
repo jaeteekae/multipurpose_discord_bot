@@ -190,7 +190,7 @@ class Gif_Dictionary(commands.Cog, name="Gif Dictionary"):
             await ctx.send("{}, plz resend & let me know what I should call this gif".format(ctx.author.mention))
             return
 
-        shortcut = args[0]
+        shortcut = args[0].lower()
         url = ''
 
         if len(shortcut)>20:
@@ -231,11 +231,11 @@ class Gif_Dictionary(commands.Cog, name="Gif Dictionary"):
                  usage="[optional prefix]")
     async def gif_list(ctx, *args):
         if args:
-            pref = args[0]
+            pref = args[0].lower()
             msg = 'All gifs that start with `{}`:'.format(pref)
         else:
             pref = ''
-            msg = 'All gifs in the dictionary so far:'
+            msg = 'All gifs in the dictionary:'
 
         shortcuts = data.gifs.keys()
         filtered = list(filter(lambda x: x.startswith(pref), shortcuts))
@@ -264,7 +264,7 @@ class Gif_Dictionary(commands.Cog, name="Gif Dictionary"):
             await ctx.send("You didn't give me anything to remove, {}... {}".format(ctx.author.mention,get_emoji(ctx.guild,'hs_nope')))
             return
 
-        shortcut = args[0]
+        shortcut = args[0].lower()
         if shortcut not in data.gifs:
             await ctx.send("That shortcut doesn't match any gifs, {} 🤔".format(ctx.author.mention))
             return
@@ -279,7 +279,7 @@ class Gif_Dictionary(commands.Cog, name="Gif Dictionary"):
         # don't interact if no arguments are sent
         if len(args)<1:
             return
-        shortcut = args[0]
+        shortcut = args[0].lower()
         if shortcut not in data.gifs:
             await ctx.send("That shortcut doesn't match any gifs, {} 🤔".format(ctx.author.mention))
             return
