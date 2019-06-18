@@ -24,6 +24,7 @@ BDAY_COLOR = 0x494ce5
 
 GIF_FILE = "data/gif_shortcuts.json"
 GIF_FOLDER = "gifs"
+GIF_COLOR = 0xa175c4
 
 help_cmd = discord.ext.commands.DefaultHelpCommand(no_category="What can Apricot-Flower-Baby do for you")
 bot = commands.Bot(command_prefix=PREFIX, case_insensitive=True, help_command=help_cmd)
@@ -210,9 +211,15 @@ class Gif_Dictionary(commands.Cog, name="Gif Dictionary"):
                 await ctx.send("{}, it looks like you didnt send me a gif to save :(".format(ctx.author.mention))
                 return
             url = args[1]
+            _, ext = os.path.splitext(url)
+            if not ext:
+                await ctx.send("{}, it looks like you didnt send me a gif to save :( (the url needs to end in .gif/.png/etc)".format(ctx.author.mention))
+                return
 
         # download img
         _, ext = os.path.splitext(url)
+        if not ext:
+            ext = '.gif'
         img_data = requests.get(url).content
         path = os.path.join(GIF_FOLDER,shortcut+ext)
         with open(path, 'wb') as f:
@@ -220,7 +227,6 @@ class Gif_Dictionary(commands.Cog, name="Gif Dictionary"):
 
         # add img to dictionary
         data.gifs[shortcut] = path
-
         await ctx.send("Success! Added `{}` to the Gif Dictionary".format(shortcut))
 
     @bot.command(name="gif-list",
@@ -229,13 +235,29 @@ class Gif_Dictionary(commands.Cog, name="Gif Dictionary"):
     async def gif_list(ctx, *args):
         if args:
             pref = args[0]
-            msg = 'All gifs that start with '
+            msg = 'All gifs that start with `{}`:'.format(pref)
         else:
             pref = ''
+            msg = 'All gifs in the dictionary so far:'
 
         shortcuts = data.gifs.keys()
-        filtered = filter(lambda x: x.startswith(pref), shortcuts)
+        filtered = list(filter(lambda x: x.startswith(pref), shortcuts))
         filtered.sort()
+
+        desc = []
+        for s in filtered:
+            desc.append('✿ '+s)
+
+        if len(filtered)==0:
+            if pref:
+                await ctx.send("There are no gifs that start with `{}` {}".format(pref,get_emoji(ctx.guild,'nj_cry')))
+                return
+            else:
+                await ctx.send("There are no gifs in the dictionary {}".format(get_emoji(ctx.guild,'nj_cry')))
+                return                
+
+        emb = discord.Embed(description='\n'.join(desc),color=GIF_COLOR)
+        await ctx.send(msg,embed=emb)
 
 
 ##### GENERAL MESSAGE HANDLING #####
@@ -254,7 +276,7 @@ async def on_message(message):
 
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(write_to_disk, 'interval', hours=1)
+scheduler.add_job(write_to_disk, 'interval', minutes=1)
 scheduler.start()
 
 bot.run(TOKEN)
