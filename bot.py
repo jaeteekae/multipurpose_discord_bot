@@ -93,7 +93,7 @@ class Out_of_Office(commands.Cog, name="Out of Office"):
         await ctx.send(response)
 
     @bot.command(help="Use to stop being away")
-    async def back(ctx):
+    async def back(ctx, *args):
         memid = str(ctx.author.id)
 
         if memid not in data.away:
@@ -109,7 +109,7 @@ class Out_of_Office(commands.Cog, name="Out of Office"):
             timestring = generate_timestring(elapsed)
 
             msg = "Welcome back, {}!".format(ctx.author.mention)
-            desc = "__You were away for:__ {}\n __You are no longer:__ {}\n👋".format(timestring,obj["message"])
+            desc = "__You were away for__: {}\n __You are no longer__: {}\n👋".format(timestring,obj["message"])
             emb = discord.Embed(description=desc,color=AWAY_COLOR)
             await ctx.send(msg,embed=emb)
 
@@ -123,7 +123,7 @@ def send_away_msg(mem):
     since = left_at.strftime('**%I:%M%p** on %x')
 
     titletxt = "**{}** is away!".format(mem.display_name)
-    responsetxt = "__Duration:__ {}\n__Since:__ {}\n__Message:__ {}\n🏃‍♀️".format(timestring,since,obj["message"])
+    responsetxt = "__Duration__: {}\n__Since__: {}\n__Message__: {}\n🏃‍♀️".format(timestring,since,obj["message"])
     return(titletxt, responsetxt)
 
 ######## BIRTHDAYS ########
