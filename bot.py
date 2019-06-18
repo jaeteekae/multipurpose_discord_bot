@@ -330,7 +330,7 @@ async def on_message(message):
 
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(write_to_disk, 'interval', minutes=1)
+scheduler.add_job(write_to_disk, 'interval', hours=1)
 scheduler.start()
 
 bot.run(TOKEN)
