@@ -283,7 +283,10 @@ class Gif_Dictionary(commands.Cog, name="Gif Dictionary"):
         if shortcut not in data.gifs:
             await ctx.send("That shortcut doesn't match any gifs, {} 🤔".format(ctx.author.mention))
             return
-
+        path = data.gifs[shortcut]
+        _, fname = os.path.split(path)
+        file = discord.File(path,filename=fname)
+        await ctx.send(file=file)
 
 
 ##### GENERAL MESSAGE HANDLING #####
@@ -302,7 +305,7 @@ async def on_message(message):
 
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(write_to_disk, 'interval', minutes=1)
+scheduler.add_job(write_to_disk, 'interval', hours=1)
 scheduler.start()
 
 bot.run(TOKEN)
