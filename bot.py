@@ -70,7 +70,7 @@ def generate_timestring(elapsed):
 
 ############ OUT OF OFFICE ############
 class Out_of_Office(commands.Cog, name="Out of Office"):
-    @bot.command(help="set yourself away for when people mention you in chat", 
+    @bot.command(help="Set yourself away for when people mention you in chat", 
                  usage="<message_here>")
     async def away(ctx, *args):
         if not args:
@@ -92,7 +92,7 @@ class Out_of_Office(commands.Cog, name="Out of Office"):
         response = 'Marking you away, {}, with the message *"{}"*\nWe will miss you {}'.format(ctx.author.mention, msg, emoji)
         await ctx.send(response)
 
-    @bot.command(help="use to stop being away")
+    @bot.command(help="Use to stop being away")
     async def back(ctx):
         memid = str(ctx.author.id)
 
@@ -108,8 +108,10 @@ class Out_of_Office(commands.Cog, name="Out of Office"):
             elapsed = now - obj["time"]
             timestring = generate_timestring(elapsed)
 
-            response = "Welcome back, {}!\nYou were away for: {}".format(ctx.author.mention, timestring)
-            await ctx.send(response)
+            msg = "Welcome back, {}!".format(ctx.author.mention)
+            desc = "__You were away for:__ {}\n __You are no longer:__ {}\n👋".format(timestring,obj["message"])
+            emb = discord.Embed(description=desc,color=AWAY_COLOR)
+            await ctx.send(msg,embed=emb)
 
 def send_away_msg(mem):
     obj = data.away[str(mem.id)]
@@ -121,11 +123,11 @@ def send_away_msg(mem):
     since = left_at.strftime('**%I:%M%p** on %x')
 
     titletxt = "**{}** is away!".format(mem.display_name)
-    responsetxt = "__Duration:__ {}\n__Since:__ {}\n__Message:__ {}".format(timestring,since,obj["message"])
+    responsetxt = "__Duration:__ {}\n__Since:__ {}\n__Message:__ {}\n🏃‍♀️".format(timestring,since,obj["message"])
     return(titletxt, responsetxt)
 
 ######## BIRTHDAYS ########
-@bot.command()
+@bot.command(help="Check the next birthday in the chat")
 async def birthday(ctx):
     today = datetime.today()
     this_year = today.year
