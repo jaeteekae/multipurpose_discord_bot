@@ -3,7 +3,7 @@ import discord
 from discord.ext import commands
 import logging
 
-import random, json, os, pickle, time
+import random, json, os, pickle, time, requests, validators
 from datetime import datetime, timedelta, date
 from bs4 import BeautifulSoup
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -22,18 +22,29 @@ AWAY_COLOR = 0x72FF7B
 BDAY_FILE = "data/bdays.json"
 BDAY_COLOR = 0x494ce5
 
+GIF_FILE = "data/gif_shortcuts.json"
+GIF_FOLDER = "gifs"
+
 help_cmd = discord.ext.commands.DefaultHelpCommand(no_category="What can Apricot-Flower-Baby do for you")
 bot = commands.Bot(command_prefix=PREFIX, case_insensitive=True, help_command=help_cmd)
 
 class DataObj:
     away = {}
     bdays = {}
+    gifs = {}
 
     def __init__(self):
         try:
             with open(AWAY_FILE,'r') as f:
                 obj = json.load(f)
                 self.away = obj
+        except:
+            pass
+
+        try:
+            with open(GIF_FILE,'r') as f:
+                obj = json.load(f)
+                self.gifs = obj
         except:
             pass
 
@@ -46,6 +57,8 @@ data = DataObj()
 def write_to_disk():
     with open(AWAY_FILE,'w') as f:
         json.dump(data.away,f)
+    with open(GIF_FILE,'w') as f:
+        json.dump(data.gifs,f)
 
 def get_emoji(guild, name):
     emoji = discord.utils.get(guild.emojis, name=name)
@@ -128,7 +141,7 @@ def send_away_msg(mem):
 
 ######## BIRTHDAYS ########
 @bot.command(help="Check the next birthday in the chat")
-async def birthday(ctx):
+async def birthday(ctx, *args):
     today = datetime.today()
     this_year = today.year
     this_month = today.month
@@ -164,6 +177,65 @@ async def birthday(ctx):
             msg = "🎊 The next birthday is " + person['name'] + "'s! 🎊\n" + datestr
             emb = discord.Embed(description=msg,color=BDAY_COLOR)
             await ctx.send(embed=emb)
+
+
+######### GIF DICTIONARY #########
+class Gif_Dictionary(commands.Cog, name="Gif Dictionary"):
+    @bot.command(name="gif-add",
+                 help="Add a gif (or image) to the gif dictionary", 
+                 usage="<shortcut> <uploaded file OR URL>")
+    async def gif_add(ctx, *args):
+        if not args:
+            await ctx.send("{}, plz resend & let me know what I should call this gif".format(ctx.author.mention))
+            return
+
+        shortcut = args[0]
+        url = ''
+
+        if len(shortcut)>20:
+            await ctx.send("{}, the shortcut `{}` is too long. Plz resend with shortcut under 20 characters".format(ctx.author.mention, shortcut))
+            return
+
+        # check if shortcut already exists
+        if shortcut in data.gifs:
+            await ctx.send("{}, the shortcut `{}` is already in use. Plz resend with a different one".format(ctx.author.mention, shortcut))
+            return
+            
+        # img is attached
+        if ctx.message.attachments:
+            url = ctx.message.attachments[0].url
+        # img is a link
+        else:
+            if len(args)<2 or not validators.url(args[1]):
+                await ctx.send("{}, it looks like you didnt send me a gif to save :(".format(ctx.author.mention))
+                return
+            url = args[1]
+
+        # download img
+        _, ext = os.path.splitext(url)
+        img_data = requests.get(url).content
+        path = os.path.join(GIF_FOLDER,shortcut+ext)
+        with open(path, 'wb') as f:
+            f.write(img_data)
+
+        # add img to dictionary
+        data.gifs[shortcut] = path
+
+        await ctx.send("Success! Added `{}` to the Gif Dictionary".format(shortcut))
+
+    @bot.command(name="gif-list",
+                 help="See the gifs already in the gif dictionary", 
+                 usage="[optional prefix]")
+    async def gif_list(ctx, *args):
+        if args:
+            pref = args[0]
+            msg = 'All gifs that start with '
+        else:
+            pref = ''
+
+        shortcuts = data.gifs.keys()
+        filtered = filter(lambda x: x.startswith(pref), shortcuts)
+        filtered.sort()
 
 
 ##### GENERAL MESSAGE HANDLING #####
