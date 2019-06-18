@@ -228,17 +228,17 @@ class Gif_Dictionary(commands.Cog, name="Gif Dictionary"):
 
     @bot.command(name="gif-list",
                  help="See the gifs already in the gif dictionary", 
-                 usage="[optional prefix]")
+                 usage="[optional filter]")
     async def gif_list(ctx, *args):
         if args:
             pref = args[0].lower()
-            msg = 'All gifs that start with `{}`:'.format(pref)
+            msg = 'All gifs that contain `{}`:'.format(pref)
         else:
             pref = ''
             msg = 'All gifs in the dictionary:'
 
         shortcuts = data.gifs.keys()
-        filtered = list(filter(lambda x: x.startswith(pref), shortcuts))
+        filtered = list(filter(lambda x: (pref in x), shortcuts))
         filtered.sort()
 
         desc = []
@@ -247,7 +247,7 @@ class Gif_Dictionary(commands.Cog, name="Gif Dictionary"):
 
         if len(filtered)==0:
             if pref:
-                await ctx.send("There are no gifs that start with `{}` {}".format(pref,get_emoji(ctx.guild,'nj_cry')))
+                await ctx.send("There are no gifs that contain `{}` {}".format(pref,get_emoji(ctx.guild,'nj_cry')))
                 return
             else:
                 await ctx.send("There are no gifs in the dictionary {}".format(get_emoji(ctx.guild,'nj_cry')))
