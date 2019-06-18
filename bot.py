@@ -217,11 +217,8 @@ class Gif_Dictionary(commands.Cog, name="Gif Dictionary"):
                 return
 
         # download img
-        _, ext = os.path.splitext(url)
-        if not ext:
-            ext = '.gif'
         img_data = requests.get(url).content
-        path = os.path.join(GIF_FOLDER,shortcut+ext)
+        path = os.path.join(GIF_FOLDER,shortcut+'.gif')
         with open(path, 'wb') as f:
             f.write(img_data)
 
@@ -258,6 +255,35 @@ class Gif_Dictionary(commands.Cog, name="Gif Dictionary"):
 
         emb = discord.Embed(description='\n'.join(desc),color=GIF_COLOR)
         await ctx.send(msg,embed=emb)
+
+    @bot.command(name="gif-remove",
+                 help="Remove a gif from the gif dictionary", 
+                 usage="<shortcut>")
+    async def gif_remove(ctx, *args):
+        if len(args)<1:
+            await ctx.send("You didn't give me anything to remove, {}... {}".format(ctx.author.mention,get_emoji(ctx.guild,'hs_nope')))
+            return
+
+        shortcut = args[0]
+        if shortcut not in data.gifs:
+            await ctx.send("That shortcut doesn't match any gifs, {} 🤔".format(ctx.author.mention))
+            return
+
+        path = data.gifs.pop(shortcut)
+        os.remove(path)
+        await ctx.send("Successfully removed `{}` from the dictionary".format(shortcut))
+
+    @bot.command(help="Remove a gif from the gif dictionary", 
+                 usage="<shortcut>")
+    async def gif(ctx, *args):
+        # don't interact if no arguments are sent
+        if len(args)<1:
+            return
+        shortcut = args[0]
+        if shortcut not in data.gifs:
+            await ctx.send("That shortcut doesn't match any gifs, {} 🤔".format(ctx.author.mention))
+            return
+
 
 
 ##### GENERAL MESSAGE HANDLING #####
