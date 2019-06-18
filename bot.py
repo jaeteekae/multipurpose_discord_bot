@@ -273,7 +273,7 @@ class Gif_Dictionary(commands.Cog, name="Gif Dictionary"):
         os.remove(path)
         await ctx.send("Successfully removed `{}` from the dictionary".format(shortcut))
 
-    @bot.command(help="Remove a gif from the gif dictionary", 
+    @bot.command(help="Use a gif from the dictionary", 
                  usage="<shortcut>")
     async def gif(ctx, *args):
         # don't interact if no arguments are sent
@@ -330,7 +330,7 @@ async def on_message(message):
 
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(write_to_disk, 'interval', hours=1)
+scheduler.add_job(write_to_disk, 'interval', minutes=30)
 scheduler.start()
 
 bot.run(TOKEN)
