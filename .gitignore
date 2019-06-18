@@ -10,3 +10,10 @@ secret.py
 
 gcbot
 gcbot/*
+
+ignore
+ignore/*
+
+test.py
+
+data/*
