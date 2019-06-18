@@ -288,6 +288,31 @@ class Gif_Dictionary(commands.Cog, name="Gif Dictionary"):
         file = discord.File(path,filename=fname)
         await ctx.send(file=file)
 
+    @bot.command(name="gif-rename",
+                 help="Rename a gif in the gif dictionary", 
+                 usage="<old shortcut> <new shortcut>")
+    async def gif_rename(ctx, *args):
+        if len(args)<2:
+            await ctx.send("Seems like you're missing some arguments there, {} {}".format(ctx.author.mention,get_emoji(ctx.guild,'v_tea')))
+            return
+
+        old = args[0].lower()
+        new = args[1].lower()
+
+        if old not in data.gifs:
+            await ctx.send("`{}` doesn't match anything in the dictionary, {} 🤔".format(old,ctx.author.mention))
+            return
+        if new in data.gifs:
+            await ctx.send("{}, the shortcut `{}` is already in use. Plz resend with a different one".format(ctx.author.mention, new))
+            return
+
+        old_path = data.gifs.pop(old)          
+        new_path = os.path.join(GIF_FOLDER,new+'.gif')
+
+        os.rename(old_path,new_path)
+        data.gifs[new] = new_path
+        await ctx.send("Success! `{}` is now called `{}`".format(old, new))
+
 
 ##### GENERAL MESSAGE HANDLING #####
 @bot.event
@@ -305,7 +330,7 @@ async def on_message(message):
 
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(write_to_disk, 'interval', hours=1)
+scheduler.add_job(write_to_disk, 'interval', minutes=1)
 scheduler.start()
 
 bot.run(TOKEN)
