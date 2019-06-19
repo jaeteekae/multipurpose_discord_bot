@@ -11,7 +11,9 @@ import secret
 import pdb
 # pdb.set_trace()
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(filename='data/logfile.txt',
+                    filemode='a',
+                    level=logging.DEBUG)
 
 TOKEN = secret.TOKEN
 PREFIX = "!"
