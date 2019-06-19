@@ -11,9 +11,10 @@ import secret
 import pdb
 # pdb.set_trace()
 
-logging.basicConfig(filename='data/logfile.txt',
-                    filemode='a',
-                    level=logging.DEBUG)
+# logging.basicConfig(filename='data/logfile.txt',
+#                     filemode='a',
+#                     level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 TOKEN = secret.TOKEN
 PREFIX = "!"
@@ -28,6 +29,8 @@ GIF_FILE = "data/gif_shortcuts.json"
 GIF_FOLDER = "gifs"
 GIF_COLOR = 0xa175c4
 
+LINKS_FILE = 'data/gen_links.json'
+
 help_cmd = discord.ext.commands.DefaultHelpCommand(no_category="What can Apricot-Flower-Baby do for you")
 bot = commands.Bot(command_prefix=PREFIX, case_insensitive=True, help_command=help_cmd)
 
@@ -35,6 +38,7 @@ class DataObj:
     away = {}
     bdays = {}
     gifs = {}
+    links = {}
 
     def __init__(self):
         try:
@@ -51,17 +55,42 @@ class DataObj:
         except:
             pass
 
-        with open(BDAY_FILE,'r') as f:
-            obj = json.load(f)
-            self.bdays = obj
+        try:
+            with open(LINKS_FILE,'r') as f:
+                obj = json.load(f)
+                self.links = obj
+        except:
+            pass
+
+
+        try:
+            with open(BDAY_FILE,'r') as f:
+                obj = json.load(f)
+                self.bdays = obj
+        except:
+            pass
 
 data = DataObj()
 
 def write_to_disk():
+    remove_old_links()
     with open(AWAY_FILE,'w') as f:
         json.dump(data.away,f)
     with open(GIF_FILE,'w') as f:
         json.dump(data.gifs,f)
+    with open(LINKS_FILE,'w') as f:
+        json.dump(data.links,f)
+
+def remove_old_links():
+    now = datetime.now()
+    old = []
+    for key, val in data.links.items():
+        then = datetime.fromtimestamp(val)
+        if (now-then).days>0:
+            old.append(key)
+
+    for link in old:
+        data.links.pop(link)
 
 def get_emoji(guild, name):
     emoji = discord.utils.get(guild.emojis, name=name)
@@ -316,18 +345,53 @@ class Gif_Dictionary(commands.Cog, name="Gif Dictionary"):
         await ctx.send("Success! `{}` is now called `{}`".format(old, new))
 
 
+######### LINK EXTRACTION #########
+# reposts new (not posted in the last 24 hrs) links from #gen to a links-only channel
+def extract_new_links(text):
+    pieces = text.split(' ')
+    links = list(filter(lambda x: validators.url(x), pieces))
+    without_imgs = list(filter(lambda x: (not is_image(x)) and ('tenor.com' not in x), links))
+    #include credit?
+    new_links = list(filter(lambda x: x not in data.links, without_imgs))
+
+    nowts = datetime.now().timestamp()
+    for l in new_links:
+        data.links[l] = nowts
+
+    return new_links
+
+def is_image(url):
+    _, ext = os.path.splitext(url)
+    if not ext:
+        return False
+    ext = ext.lower()
+    img_exts = ['jpeg','exif','gif','bmp','png','webp','hdr','img','jpg','ico','tif']
+    for iext in img_exts:
+        if iext in ext:
+            return True
+    return False
+
 ##### GENERAL MESSAGE HANDLING #####
 @bot.event
 async def on_message(message):
     if message.author == bot.user:
         return
 
+    # check for away mentions
     for ment in message.mentions:
         if str(ment.id) in data.away:
             title,desc = send_away_msg(ment)
             emb = discord.Embed(title=title,description=desc,color=AWAY_COLOR)
             await message.channel.send(embed=emb)
 
+    # check for links in general
+    if message.channel.name == 'general':
+        new_links = extract_new_links(message.content)
+        link_channel = bot.get_channel(secret.LC_CHANNEL_ID)
+        for l in new_links:
+            await link_channel.send(l)
+
+    # execute prefix commands
     await bot.process_commands(message)
 
 
