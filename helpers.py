@@ -1,7 +1,21 @@
 from datetime import datetime
 import discord
+import json, os
 
 from data import data
+from settings import *
+
+
+def is_image(url):
+    _, ext = os.path.splitext(url)
+    if not ext:
+        return False
+    ext = ext.lower()
+    img_exts = ['jpeg','exif','gif','bmp','png','webp','hdr','img','jpg','ico','tif']
+    for iext in img_exts:
+        if iext in ext:
+            return True
+    return False
 
 def generate_timestring(elapsed):
     days, r = divmod(elapsed, 86400)
@@ -19,6 +33,15 @@ def generate_timestring(elapsed):
         timestring += "**{:.0f}** seconds".format(seconds)
 
     return(timestring)
+
+def write_to_disk():
+    remove_old_links()
+    with open(AWAY_FILE,'w') as f:
+        json.dump(data.away,f)
+    with open(GIF_FILE,'w') as f:
+        json.dump(data.gifs,f)
+    with open(LINKS_FILE,'w') as f:
+        json.dump(data.links,f)
 
 def remove_old_links():
     now = datetime.now()

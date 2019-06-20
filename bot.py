@@ -22,15 +22,6 @@ logging.basicConfig(level=logging.INFO)
 help_cmd = discord.ext.commands.DefaultHelpCommand(no_category="What can Apricot-Flower-Baby do for you")
 bot = commands.Bot(command_prefix=PREFIX, case_insensitive=True, help_command=help_cmd)
 
-def write_to_disk():
-    remove_old_links()
-    with open(AWAY_FILE,'w') as f:
-        json.dump(data.away,f)
-    with open(GIF_FILE,'w') as f:
-        json.dump(data.gifs,f)
-    with open(LINKS_FILE,'w') as f:
-        json.dump(data.links,f)
-
 ############ OUT OF OFFICE ############
 def send_away_msg(mem):
     obj = data.away[str(mem.id)]
@@ -44,46 +35,6 @@ def send_away_msg(mem):
     titletxt = "**{}** is away!".format(mem.display_name)
     responsetxt = "__Duration__: {}\n__Since__: {}\n__Message__: {}\n🏃‍♀️".format(timestring,since,obj["message"])
     return(titletxt, responsetxt)
-
-######## BIRTHDAYS ########
-@bot.command(help="Check the next birthday in the chat")
-async def birthday(ctx, *args):
-    today = datetime.today()
-    this_year = today.year
-    this_month = today.month
-    this_day = today.day
-    sumthisday = 31*this_month+this_day
-    closest_bday = [12,31,365]
-
-    for person in data.bdays:
-        dob = person['dob'].split('/')
-        mon = int(dob[0])
-        day = int(dob[1])
-        sumdays = 31*mon+day
-        diff = sumdays-sumthisday
-
-        # is a contender
-        if diff>0 and diff<closest_bday[2]:
-            closest_bday[0] = mon
-            closest_bday[1] = day
-            closest_bday[2] = diff
-
-    for person in data.bdays:
-        dob = person['dob'].split('/')
-        mon = int(dob[0])
-        day = int(dob[1])
-        if (mon*31+day)-sumthisday>0:
-            yr = this_year
-        else:
-            yr = this_year+1
-        datestr = date(yr,mon,day).strftime('On %A, %B %d')
-
-        if mon==closest_bday[0] and day==closest_bday[1]:
-
-            msg = "🎊 The next birthday is " + person['name'] + "'s! 🎊\n" + datestr
-            emb = discord.Embed(description=msg,color=BDAY_COLOR)
-            await ctx.send(embed=emb)
-
 
 ######### LINK EXTRACTION #########
 # reposts new (not posted in the last 24 hrs) links from #gen to a links-only channel
@@ -99,17 +50,6 @@ def extract_new_links(text):
         data.links[l] = nowts
 
     return new_links
-
-def is_image(url):
-    _, ext = os.path.splitext(url)
-    if not ext:
-        return False
-    ext = ext.lower()
-    img_exts = ['jpeg','exif','gif','bmp','png','webp','hdr','img','jpg','ico','tif']
-    for iext in img_exts:
-        if iext in ext:
-            return True
-    return False
 
 ##### GENERAL MESSAGE HANDLING #####
 @bot.event
@@ -140,7 +80,8 @@ scheduler.add_job(write_to_disk, 'interval', minutes=30)
 scheduler.start()
 
 extensions = ['cogs.gif_dictionary',
-              'cogs.away']
+              'cogs.away',
+              'cogs.birthdays']
 
 if __name__ == '__main__':
     for ext in extensions:
