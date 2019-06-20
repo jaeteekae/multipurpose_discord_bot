@@ -3,9 +3,8 @@ import discord
 from discord.ext import commands
 import logging
 
-import random, json, os, pickle, time, validators
-from datetime import datetime, timedelta, date
-from bs4 import BeautifulSoup
+import os, time, validators
+from datetime import datetime, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 import pdb
 
