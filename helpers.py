@@ -34,27 +34,6 @@ def generate_timestring(elapsed):
 
     return(timestring)
 
-def write_to_disk():
-    remove_old_links()
-    with open(AWAY_FILE,'w') as f:
-        json.dump(data.away,f)
-    with open(GIF_FILE,'w') as f:
-        json.dump(data.gifs,f)
-    with open(LINKS_FILE,'w') as f:
-        json.dump(data.links,f)
-
-def remove_old_links():
-    now = datetime.now()
-    old = []
-    for key, val in data.links.items():
-        then = datetime.fromtimestamp(val)
-        if (now-then).days>0:
-            old.append(key)
-
-    for link in old:
-        data.links.pop(link)
-
-
 def get_emoji(guild, name):
     emoji = discord.utils.get(guild.emojis, name=name)
     return str(emoji)

@@ -73,14 +73,20 @@ async def on_message(message):
     # execute prefix commands
     await bot.process_commands(message)
 
+# lol this doesn't work at all
+@bot.event
+async def dm(ctx):
+    await bot.process_commands(ctx)
+
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(write_to_disk, 'interval', minutes=30)
+scheduler.add_job(data.write_to_disk, 'interval', minutes=30)
 scheduler.start()
 
 extensions = ['cogs.gif_dictionary',
               'cogs.away',
-              'cogs.birthdays']
+              'cogs.birthdays',
+              'cogs.stats']
 
 if __name__ == '__main__':
     for ext in extensions:

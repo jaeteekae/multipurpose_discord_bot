@@ -9,6 +9,9 @@ from helpers import *
 
 
 class Out_of_Office(commands.Cog, name="Out of Office"):
+    def __init__(self, bot):
+        self.bot = bot
+
     @commands.command(help="Set yourself away for when people mention you in chat", 
                 	  usage="<message_here>")
     async def away(self, ctx, *args):
