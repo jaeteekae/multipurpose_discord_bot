@@ -89,7 +89,11 @@ class Gif_Dictionary(commands.Cog, name="Gif Dictionary"):
                 return        
 
         emb = discord.Embed(description='\n'.join(desc),color=GIF_COLOR)
-        await ctx.send(msg,embed=emb)
+        if len(desc) > 10:
+            await ctx.send("There were a lot of gifs, so I DMed you 😘".format(ctx.author.mention))
+            await ctx.author.send(msg,embed=emb)
+        else:
+            await ctx.send(msg,embed=emb)
 
 
     @commands.command(name="gif-remove",

@@ -55,7 +55,7 @@ def extract_new_links(text):
 async def on_message(message):
     if message.author == bot.user:
         return
-        
+
     # check for away mentions
     for ment in message.mentions:
         if str(ment.id) in data.away:
