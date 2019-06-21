@@ -36,5 +36,8 @@ def generate_timestring(elapsed):
 
 def get_emoji(guild, name):
     emoji = discord.utils.get(guild.emojis, name=name)
-    return str(emoji)
+    if emoji:
+        return str(emoji)
+    else:
+        return ''
 

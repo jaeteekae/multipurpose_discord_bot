@@ -55,7 +55,7 @@ def extract_new_links(text):
 async def on_message(message):
     if message.author == bot.user:
         return
-
+        
     # check for away mentions
     for ment in message.mentions:
         if str(ment.id) in data.away:
@@ -63,15 +63,16 @@ async def on_message(message):
             emb = discord.Embed(title=title,description=desc,color=AWAY_COLOR)
             await message.channel.send(embed=emb)
 
-    # check for links in general
-    if message.channel.name == 'general':
-        new_links = extract_new_links(message.content)
-        link_channel = bot.get_channel(LC_CHANNEL_ID)
-        for l in new_links:
-            await link_channel.send(l)
-
-    # track stats
-    # data.track_message(str(message.channel.id),str(message.author.id))
+    # only do these if the message is sent from a server
+    if message.guild:
+        # check for links in general
+        if message.channel.name == 'general':
+            new_links = extract_new_links(message.content)
+            link_channel = bot.get_channel(LC_CHANNEL_ID)
+            for l in new_links:
+                await link_channel.send(l)
+        # track stats
+        # data.track_message(str(message.channel.id),str(message.author.id))
 
     # execute prefix commands
     await bot.process_commands(message)
