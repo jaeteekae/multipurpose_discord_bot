@@ -69,13 +69,14 @@ async def on_message(message):
         link_channel = bot.get_channel(LC_CHANNEL_ID)
         for l in new_links:
             await link_channel.send(l)
-            
+
     # track stats
     # data.track_message(str(message.channel.id),str(message.author.id))
 
     # execute prefix commands
     await bot.process_commands(message)
 
+######## AUTODELETE FOR #RECEIPTS ########
 @bot.event
 async def on_reaction_add(reaction, user):
     if reaction.message.channel.id != RECEIPTS_CHANNEL_ID:
@@ -85,6 +86,12 @@ async def on_reaction_add(reaction, user):
     
     if reaction.emoji == '🗑':
         await reaction.message.delete()
+
+
+@bot.event
+async def on_message_edit(before, after):
+    if before.content != after.content:
+        await bot.process_commands(after)
 
 # lol this doesn't work at all
 @bot.event
