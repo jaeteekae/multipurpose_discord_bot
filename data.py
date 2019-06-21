@@ -3,32 +3,30 @@ import json, os
 from datetime import datetime
 
 class DataObj:
-    away = {}
-    bdays = {}
-    gifs = {}
-    links = {}
-
     def __init__(self):
+        if not os.path.isdir(settings.DATA_FOLDER):
+            os.makedirs(settings.DATA_FOLDER)
+
         try:
             with open(settings.AWAY_FILE,'r') as f:
                 obj = json.load(f)
                 self.away = obj
         except:
-            pass
+            self.away = {}
 
         try:
             with open(settings.GIF_FILE,'r') as f:
                 obj = json.load(f)
                 self.gifs = obj
         except:
-            pass
+            self.gifs = {}
 
         try:
             with open(settings.LINKS_FILE,'r') as f:
                 obj = json.load(f)
                 self.links = obj
         except:
-            pass
+            self.link = {}
 
 
         try:
@@ -36,7 +34,16 @@ class DataObj:
                 obj = json.load(f)
                 self.bdays = obj
         except:
-            pass
+            self.bdays = {}
+
+        try:
+            with open(settings.STATS_FILE,'r') as f:
+                obj = json.load(f)
+                self.stats = obj
+        except:
+            self.stats = {}
+            # self.stats = {'days': [{}],
+            #               'all_time': {}}
 
     def write_to_disk(self):
         self.remove_old_links()
@@ -46,6 +53,8 @@ class DataObj:
             json.dump(self.gifs,f)
         with open(settings.LINKS_FILE,'w') as f:
             json.dump(self.links,f)
+        with open(settings.STATS_FILE,'w') as f:
+            json.dump(self.stats,f)
 
     def remove_old_links(self):
         now = datetime.now()
@@ -57,6 +66,32 @@ class DataObj:
 
         for link in old:
             self.links.pop(link)
+
+    def turnover_stats(self):
+        # if it's the start of a new month
+        if datetime.now().day == 1:
+            for day in self.stats['days']:
+                pass
+                #TODO
+
+        else:
+            new_day = {}
+            self.stats['days'].append(new_day)
+
+    def track_message(self, channelid, personid):
+        today = self.stats['days'][-1]
+
+        # first post by personid of the day
+        if personid not in today:
+            today[personid] = {channelid: 1}
+        else:
+            # first post by personid in channelid of the day
+            if channelid not in today[personid]:
+                today[personid][channelid] = 1
+            # not the first post, so increment
+            else:
+                today[personid][channelid] += 1
+
 
 
 data = DataObj()

@@ -66,12 +66,25 @@ async def on_message(message):
     # check for links in general
     if message.channel.name == 'general':
         new_links = extract_new_links(message.content)
-        link_channel = bot.get_channel(secret.LC_CHANNEL_ID)
+        link_channel = bot.get_channel(LC_CHANNEL_ID)
         for l in new_links:
             await link_channel.send(l)
+            
+    # track stats
+    # data.track_message(str(message.channel.id),str(message.author.id))
 
     # execute prefix commands
     await bot.process_commands(message)
+
+@bot.event
+async def on_reaction_add(reaction, user):
+    if reaction.message.channel.id != RECEIPTS_CHANNEL_ID:
+        return
+    elif type(reaction.emoji) != str:
+        return
+    
+    if reaction.emoji == '🗑':
+        await reaction.message.delete()
 
 # lol this doesn't work at all
 @bot.event
