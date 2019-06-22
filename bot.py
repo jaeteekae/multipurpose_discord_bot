@@ -80,24 +80,36 @@ async def on_message(message):
 ######## AUTODELETE FOR #RECEIPTS ########
 @bot.event
 async def on_reaction_add(reaction, user):
-    if reaction.message.channel.id != RECEIPTS_CHANNEL_ID:
+    if type(reaction.emoji) != str:
         return
-    elif type(reaction.emoji) != str:
-        return
-    
-    if reaction.emoji == '🗑':
-        await reaction.message.delete()
 
+    if reaction.message.channel.id == RECEIPTS_CHANNEL_ID:
+        if reaction.emoji == '🗑':
+            await reaction.message.delete()
+
+    if reaction.emoji == '📌':
+        await reaction.message.pin()
+
+@bot.event
+async def on_reaction_remove(reaction, user):
+    if reaction.emoji == '📌':
+        await reaction.message.unpin()
 
 @bot.event
 async def on_message_edit(before, after):
     if before.content != after.content:
         await bot.process_commands(after)
 
-# lol this doesn't work at all
 @bot.event
 async def dm(ctx):
     await bot.process_commands(ctx)
+
+@bot.event
+async def on_ready():
+    if not data.stats_initted:
+        stats = {'days': [{}],
+                 'all_time': {}}
+        data.set_stats(stats)
 
 
 scheduler = BackgroundScheduler()

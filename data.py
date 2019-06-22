@@ -3,6 +3,7 @@ import json, os
 from datetime import datetime
 
 class DataObj:
+
     def __init__(self):
         if not os.path.isdir(settings.DATA_FOLDER):
             os.makedirs(settings.DATA_FOLDER)
@@ -28,7 +29,6 @@ class DataObj:
         except:
             self.link = {}
 
-
         try:
             with open(settings.BDAY_FILE,'r') as f:
                 obj = json.load(f)
@@ -40,10 +40,14 @@ class DataObj:
             with open(settings.STATS_FILE,'r') as f:
                 obj = json.load(f)
                 self.stats = obj
+            self.stats_initted = True
         except:
             self.stats = {}
-            # self.stats = {'days': [{}],
-            #               'all_time': {}}
+            self.stats_initted = False
+
+    def set_stats(stats):
+        self.stats = stats
+        self.stats_initted = True
 
     def write_to_disk(self):
         self.remove_old_links()
