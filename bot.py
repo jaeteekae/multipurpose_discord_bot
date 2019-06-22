@@ -72,7 +72,7 @@ async def on_message(message):
             for l in new_links:
                 await link_channel.send(l)
         # track stats
-        # data.track_message(str(message.channel.id),str(message.author.id))
+        data.track_message(str(message.channel.id),str(message.author.id))
 
     # execute prefix commands
     await bot.process_commands(message)
@@ -107,13 +107,18 @@ async def dm(ctx):
 @bot.event
 async def on_ready():
     if not data.stats_initted:
+        memb_stats = {}
+        members = list(filter(lambda x: not x.bot, bot.guilds[0].members))
+        for m in members:
+            memb_stats[str(m.id)] = {}
         stats = {'days': [{}],
-                 'all_time': {}}
+                 'all_time': memb_stats}
         data.set_stats(stats)
 
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(data.write_to_disk, 'interval', minutes=30)
+scheduler.add_job(data.write_to_disk, 'cron', minute='*/30')
+scheduler.add_job(data.turnover_stats, 'cron', hour=0, minute=1)
 scheduler.start()
 
 extensions = ['cogs.gif_dictionary',

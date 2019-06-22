@@ -45,7 +45,7 @@ class DataObj:
             self.stats = {}
             self.stats_initted = False
 
-    def set_stats(stats):
+    def set_stats(self, stats):
         self.stats = stats
         self.stats_initted = True
 
@@ -74,13 +74,20 @@ class DataObj:
     def turnover_stats(self):
         # if it's the start of a new month
         if datetime.now().day == 1:
+            ltd = self.stats['all_time']
+            # consolidate data
             for day in self.stats['days']:
-                pass
-                #TODO
+                for personid, messages in day.items():
+                    person = ltd[personid]
+                    for channel, num in messages.items():
+                        if channel in person:
+                            person[channel] += num
+                        else:
+                            person[channel] = num
+            self.stats['days'] = []
 
-        else:
-            new_day = {}
-            self.stats['days'].append(new_day)
+        new_day = {}
+        self.stats['days'].append(new_day)
 
     def track_message(self, channelid, personid):
         today = self.stats['days'][-1]
