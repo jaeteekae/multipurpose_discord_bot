@@ -15,7 +15,7 @@ from data import data
 
 # logging.basicConfig(filename='data/logfile.txt',
 #                     filemode='a',
-#                     level=logging.DEBUG)
+#                     level=logging.INFO)
 logging.basicConfig(level=logging.INFO)
 
 help_cmd = discord.ext.commands.DefaultHelpCommand(no_category="What can Apricot-Flower-Baby do for you")
