@@ -4,7 +4,7 @@ import os
 TOKEN = secret.TOKEN
 LC_CHANNEL_ID = secret.LC_CHANNEL_ID
 RECEIPTS_CHANNEL_ID = secret.RECEIPTS_CHANNEL_ID
-PREFIX = "&"
+PREFIX = "!"
 
 DATA_FOLDER = "data"
 
