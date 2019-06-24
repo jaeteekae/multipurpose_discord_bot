@@ -72,7 +72,7 @@ async def on_message(message):
             for l in new_links:
                 await link_channel.send(l)
         # track stats
-        data.track_message(str(message.channel.id),str(message.author.id))
+        # data.track_message(str(message.channel.id),str(message.author.id))
 
     # execute prefix commands
     await bot.process_commands(message)
