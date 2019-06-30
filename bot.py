@@ -13,10 +13,10 @@ from helpers import *
 from data import data
 # pdb.set_trace()
 
-# logging.basicConfig(filename='data/logfile.txt',
-#                     filemode='a',
-#                     level=logging.INFO)
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(filename='data/logfile.txt',
+                    filemode='a',
+                    level=logging.INFO)
+# logging.basicConfig(level=logging.INFO)
 
 help_cmd = discord.ext.commands.DefaultHelpCommand(no_category="What can Apricot-Flower-Baby do for you")
 bot = commands.Bot(command_prefix=PREFIX, case_insensitive=True, help_command=help_cmd)
@@ -72,7 +72,7 @@ async def on_message(message):
             for l in new_links:
                 await link_channel.send(l)
         # track stats
-        data.track_message(str(message.channel.id),str(message.author.id))
+        # data.track_message(str(message.channel.id),str(message.author.id))
 
     # execute prefix commands
     await bot.process_commands(message)
@@ -124,7 +124,8 @@ scheduler.start()
 extensions = ['cogs.gif_dictionary',
               'cogs.away',
               'cogs.birthdays',
-              'cogs.stats']
+              'cogs.stats',
+              'cogs.convert']
 
 if __name__ == '__main__':
     for ext in extensions:

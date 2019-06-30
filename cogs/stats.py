@@ -26,7 +26,7 @@ class Stats(commands.Cog):
 
 	@commands.command(name="most-stats",
 					  help="Get the most stats, you nosiest person\nTime can be 24 hours, 1 week, 1 month, or all time", 
-					  usage="<@person | #channel> [time>")
+					  usage="<@person | #channel> <time>")
 	async def stats_most(self, ctx, *args):
 		resp, emb = self.message_handle(ctx, args, self.person_stats_all, self.channel_stats_all)
 		await ctx.send(resp,embed=emb)

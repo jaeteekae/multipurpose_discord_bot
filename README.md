@@ -21,6 +21,16 @@ This bot only works in a single server, and it is meant for use amongst a group 
 ##### Birthday
 `!birthday` - returns the next birthday in the chat
 
+##### Stats Collection
+`!stats <@person|#channel> <time>` - see how many messages were posted by @person OR in #channel in the past 24 hours, 1 week, 1 month, or all-time
+
+`!more-stats <@person|#channel> <time>` - see the top 5 channels @person has posted in OR or the top 5 posters in #channel in `<time>`
+
+`!most-stats <@person|#channel> <time>` - see all of the channels OR all of the posters in `<time>`
+
+##### Unit Conversion
+`!convert <number> <unit> [to <new unit>]` - converts temperature, length, and weight between imperial and metric
+
 ### Other Features:
 
 ##### Auto-Pinning
@@ -33,5 +43,5 @@ Within the `#receipts` channel, deletes any message that gets reacted to with th
 Crossposts any (non-image) links in `#general` to a read-only, link collection channel. It only reposts links to the channel once 24 hours have passed since it was last posted.
 
 ### In Progress:
-##### Stats Collection
-Collect statistics on how many times each person posts in each channel over a given period of time.
+
+None

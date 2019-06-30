@@ -22,3 +22,5 @@ LINKS_FILE = os.path.join(DATA_FOLDER,"gen_links.json")
 
 STATS_FILE = os.path.join(DATA_FOLDER,"stats.json")
 STATS_COLOR = 0xede361 # soft yellow
+
+CONVERT_COLOR = 0xc84dd1 # dusty pink
