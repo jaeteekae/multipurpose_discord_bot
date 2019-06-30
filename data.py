@@ -89,8 +89,14 @@ class DataObj:
         new_day = {}
         self.stats['days'].append(new_day)
 
+    def turnover_hour(self):
+        self.stats['hours'].append({})
+        if len(self.stats['hours']>25):
+            self.stats['hours'] = self.stats['hours'][1:]
+
     def track_message(self, channelid, personid):
         today = self.stats['days'][-1]
+        this_hour = self.stats['hours'][-1]
 
         # first post by personid of the day
         if personid not in today:
@@ -102,6 +108,16 @@ class DataObj:
             # not the first post, so increment
             else:
                 today[personid][channelid] += 1
+
+        if personid not in this_hour:
+            this_hour[personid] = {channelid: 1}
+        else:
+            # first post by personid in channelid of the day
+            if channelid not in this_hour[personid]:
+                this_hour[personid][channelid] = 1
+            # not the first post, so increment
+            else:
+                this_hour[personid][channelid] += 1
 
 
 
