@@ -5,6 +5,15 @@ from data import data
 from helpers import *
 import settings
 
+class MyPerson():
+	def __init__(self, id, mention):
+		self.id = id
+		self.mention = mention
+
+class MyClass():
+	def __init__(self, id, mention):
+		self.id = id
+		self.mention = mention
 
 class Stats(commands.Cog):
 	def __init__(self, bot):
@@ -12,21 +21,21 @@ class Stats(commands.Cog):
 		self.timewords = ['24', 'day', 'twenty', 'week', 'month', 'all', 'alltime', 'all-time']
 
 	@commands.command(help="Get some stats, you nosy person\nTime can be 24 hours, 1 week, 1 month, or all time", 
-					  usage="<@person | #channel> <time>")
+					  usage="<@person|#channel|people|channels> <time>")
 	async def stats(self, ctx, *args):
 		resp, emb = self.message_handle(ctx, args, self.person_stats, self.channel_stats)
 		await ctx.send(resp,embed=emb)
 
 	@commands.command(name="more-stats",
 					  help="Get MORE stats, you nosier person\nTime can be 24 hours, 1 week, 1 month, or all time", 
-					  usage="<@person | #channel> <time>")
+					  usage="<@person|#channel|people|channels> <time>")
 	async def stats_more(self, ctx, *args):
 		resp, emb = self.message_handle(ctx, args, self.person_stats_top_5, self.channel_stats_top_5)
 		await ctx.send(resp,embed=emb)
 
 	@commands.command(name="most-stats",
 					  help="Get the most stats, you nosiest person\nTime can be 24 hours, 1 week, 1 month, or all time", 
-					  usage="<@person | #channel> <time>")
+					  usage="<@person|#channel|people|channels> <time>")
 	async def stats_most(self, ctx, *args):
 		resp, emb = self.message_handle(ctx, args, self.person_stats_all, self.channel_stats_all)
 		await ctx.send(resp,embed=emb)
@@ -55,7 +64,11 @@ class Stats(commands.Cog):
 		calc = 0
 		pid = str(person.id)
 		for entry in timedata:
-			if pid in entry:
+			if pid == '*':
+				for chs in entry.values():
+					for msgnum in chs.values():
+						calc += msgnum
+			elif pid in entry:
 				for ch, msgnum in entry[pid].items():
 					calc += msgnum
 		resp = "{} has sent **{}** messages in the past **{}**".format(person.mention,str(calc),timestr)
@@ -68,7 +81,9 @@ class Stats(commands.Cog):
 		for entry in timedata:
 			for chs in entry.values():
 				for ch, msgnum in chs.items():
-					if ch == chid:
+					if chid == '*':
+						calc += msgnum
+					elif ch == chid:
 						calc += msgnum
 		resp = "There have been **{}** messages sent in {} in the past **{}**".format(str(calc), channel.mention, timestr)
 		emb = discord.Embed(description=resp,color=settings.STATS_COLOR)
@@ -178,7 +193,7 @@ class Stats(commands.Cog):
 		time = time.lower()
 
 		if ('24' in time) or ('twenty' in time) or ('day' in time):
-			return(data.stats['days'][-1:],time)
+			return(data.stats['hours'][-24:],time)
 		elif 'week' in time:
 			return(data.stats['days'][-7:],time)
 		elif 'month' in time:
@@ -203,10 +218,12 @@ class Stats(commands.Cog):
 
 	def get_person(self, ctx, args):
 		person = None
+		name = args[0].lower()
 		if ctx.message.mentions:
 			person = ctx.message.mentions[0]
+		elif name == 'people':
+			person = MyPerson('*','Everyone')
 		else:
-			name = args[0].lower()
 			for per in ctx.guild.members:
 				if per.display_name.lower() == name:
 					person = per
@@ -215,10 +232,12 @@ class Stats(commands.Cog):
 
 	def get_channel(self, ctx, args):
 		channel = None
+		name = args[0].lower()
 		if ctx.message.channel_mentions:
 			channel = ctx.message.channel_mentions[0]
+		elif name == 'channels':
+			channel = MyClass('*','All Channels')
 		else:
-			name = args[0].lower()
 			for ch in ctx.guild.channels:
 				if ch.name == name:
 					channel = ch

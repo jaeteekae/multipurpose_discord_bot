@@ -72,22 +72,21 @@ class DataObj:
             self.links.pop(link)
 
     def turnover_stats(self):
-        # if it's the start of a new month
-        if datetime.now().day == 1:
-            ltd = self.stats['all_time']
-            # consolidate data
-            for day in self.stats['days']:
-                for personid, messages in day.items():
-                    person = ltd[personid]
-                    for channel, num in messages.items():
-                        if channel in person:
-                            person[channel] += num
-                        else:
-                            person[channel] = num
-            self.stats['days'] = []
-
         new_day = {}
         self.stats['days'].append(new_day)
+
+        if len(self.stats['days']>30):
+            oldest_day = self.stats['days'][0]
+            self.stats['days'] = self.stats['days'][1:]
+
+            ltd = self.stats['all_time']
+            for personid, messages in oldest_day:
+                person = ltd[personid]
+                for channel, num in messages.items():
+                    if channel in person:
+                        person[channel] += num
+                    else:
+                        person[channel] = num
 
     def turnover_hour(self):
         self.stats['hours'].append({})

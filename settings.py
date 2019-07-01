@@ -5,6 +5,7 @@ TOKEN = secret.TOKEN
 LC_CHANNEL_ID = secret.LC_CHANNEL_ID
 RECEIPTS_CHANNEL_ID = secret.RECEIPTS_CHANNEL_ID
 PREFIX = "!"
+TESTING_PREFIX = "&"
 
 DATA_FOLDER = "data"
 
@@ -24,3 +25,6 @@ STATS_FILE = os.path.join(DATA_FOLDER,"stats.json")
 STATS_COLOR = 0xede361 # soft yellow
 
 CONVERT_COLOR = 0xc84dd1 # dusty pink
+
+TESTING = False
+PRODUCTION = not TESTING

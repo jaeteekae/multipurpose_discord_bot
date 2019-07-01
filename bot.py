@@ -8,18 +8,21 @@ from datetime import datetime, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 import pdb
 
-from settings import *
+import settings
 from helpers import *
 from data import data
 # pdb.set_trace()
-
-logging.basicConfig(filename='data/logfile.txt',
-                    filemode='a',
-                    level=logging.INFO)
-# logging.basicConfig(level=logging.INFO)
+if settings.PRODUCTION:
+    logging.basicConfig(filename='data/logfile.txt',
+                        filemode='a',
+                        level=logging.INFO)
+    cmdprefix = settings.PREFIX
+elif settings.TESTING:
+    logging.basicConfig(level=logging.INFO)
+    cmdprefix = settings.TESTING_PREFIX
 
 help_cmd = discord.ext.commands.DefaultHelpCommand(no_category="What can Apricot-Flower-Baby do for you")
-bot = commands.Bot(command_prefix=PREFIX, case_insensitive=True, help_command=help_cmd)
+bot = commands.Bot(command_prefix=cmdprefix, case_insensitive=True, help_command=help_cmd)
 
 ############ OUT OF OFFICE ############
 def send_away_msg(mem):
@@ -60,7 +63,7 @@ async def on_message(message):
     for ment in message.mentions:
         if str(ment.id) in data.away:
             title,desc = send_away_msg(ment)
-            emb = discord.Embed(title=title,description=desc,color=AWAY_COLOR)
+            emb = discord.Embed(title=title,description=desc,color=settings.AWAY_COLOR)
             await message.channel.send(embed=emb)
 
     # only do these if the message is sent from a server
@@ -68,11 +71,12 @@ async def on_message(message):
         # check for links in general
         if message.channel.name == 'general':
             new_links = extract_new_links(message.content)
-            link_channel = bot.get_channel(LC_CHANNEL_ID)
+            link_channel = bot.get_channel(settings.LC_CHANNEL_ID)
             for l in new_links:
                 await link_channel.send(l)
         # track stats
-        data.track_message(str(message.channel.id),str(message.author.id))
+        if settings.PRODUCTION:
+            data.track_message(str(message.channel.id),str(message.author.id))
 
     # execute prefix commands
     await bot.process_commands(message)
@@ -83,7 +87,7 @@ async def on_reaction_add(reaction, user):
     if type(reaction.emoji) != str:
         return
 
-    if reaction.message.channel.id == RECEIPTS_CHANNEL_ID:
+    if reaction.message.channel.id == settings.RECEIPTS_CHANNEL_ID:
         if reaction.emoji == '🗑':
             await reaction.message.delete()
 
@@ -98,7 +102,7 @@ async def on_reaction_remove(reaction, user):
 @bot.event
 async def on_message_edit(before, after):
     if before.content != after.content:
-        await bot.process_commands(after)
+        await bot.process_commands(after)   
 
 @bot.event
 async def dm(ctx):
@@ -116,12 +120,12 @@ async def on_ready():
                  'all_time': memb_stats}
         data.set_stats(stats)
 
-
-scheduler = BackgroundScheduler()
-scheduler.add_job(data.write_to_disk, 'cron', minute='*/30')
-scheduler.add_job(data.turnover_stats, 'cron', hour=0, minute=1)
-scheduler.add_job(data.turnover_hour, 'cron', minute=59)
-scheduler.start()
+if settings.PRODUCTION:
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(data.write_to_disk, 'cron', minute='*/30')
+    scheduler.add_job(data.turnover_stats, 'cron', hour=0, minute=1)
+    scheduler.add_job(data.turnover_hour, 'cron', minute=59)
+    scheduler.start()
 
 extensions = ['cogs.gif_dictionary',
               'cogs.away',
@@ -133,6 +137,6 @@ if __name__ == '__main__':
     for ext in extensions:
         bot.load_extension(ext)
 
-bot.run(TOKEN, bot=True, reconnect=True)
+bot.run(settings.TOKEN, bot=True, reconnect=True)
 
 
