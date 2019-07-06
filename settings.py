@@ -8,6 +8,7 @@ PREFIX = "!"
 TESTING_PREFIX = "&"
 
 DATA_FOLDER = "data"
+PRAISE_FOLDER = 'praise_gifs'
 
 AWAY_FILE = os.path.join(DATA_FOLDER,"away.json")
 AWAY_COLOR = 0x72FF7B # lime green
@@ -28,3 +29,4 @@ CONVERT_COLOR = 0xc84dd1 # dusty pink
 
 TESTING = False
 PRODUCTION = not TESTING
+

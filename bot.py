@@ -131,7 +131,8 @@ extensions = ['cogs.gif_dictionary',
               'cogs.away',
               'cogs.birthdays',
               'cogs.stats',
-              'cogs.convert']
+              'cogs.convert',
+              'cogs.praisebot']
 
 if __name__ == '__main__':
     for ext in extensions:
