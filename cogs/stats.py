@@ -20,7 +20,7 @@ class Stats(commands.Cog):
 		self.bot = bot
 		self.timewords = ['24', 'day', 'twenty', 'week', 'month', 'all', 'alltime', 'all-time']
 
-	@commands.command(help="Get some stats, you nosy person\nTime can be 24 hours, 1 week, 1 month, or all time", 
+	@commands.command(help="Get some stats, you nosy person\nTime can be 24 hours, 1 week, 1 month, or all time\nExamples:\n\t!stats @Jules 24 hours\n\t!more-stats #general 1 week\n\t!most-stats everyone 1 month\n\t!stats channels all time", 
 					  usage="<@person|#channel|people|channels> <time>")
 	async def stats(self, ctx, *args):
 		resp, emb = self.message_handle(ctx, args, self.person_stats, self.channel_stats)
@@ -28,7 +28,7 @@ class Stats(commands.Cog):
 
 	@commands.command(name="more-stats",
 					  aliases=['stats-more'],
-					  help="Get MORE stats, you nosier person\nTime can be 24 hours, 1 week, 1 month, or all time", 
+					  help="Get MORE stats, you nosier person\nTime can be 24 hours, 1 week, 1 month, or all time\nExamples:\n\t!stats @Jules 24 hours\n\t!more-stats #general 1 week\n\t!most-stats everyone 1 month\n\t!stats channels all time", 
 					  usage="<@person|#channel|people|channels> <time>")
 	async def stats_more(self, ctx, *args):
 		resp, emb = self.message_handle(ctx, args, self.person_stats_top_5, self.channel_stats_top_5)
@@ -36,7 +36,7 @@ class Stats(commands.Cog):
 
 	@commands.command(name="most-stats",
 					  aliases=['stats-most'],
-					  help="Get the most stats, you nosiest person\nTime can be 24 hours, 1 week, 1 month, or all time", 
+					  help="Get the most stats, you nosiest person\nTime can be 24 hours, 1 week, 1 month, or all time\nExamples:\n\t!stats @Jules 24 hours\n\t!more-stats #general 1 week\n\t!most-stats everyone 1 month\n\t!stats channels all time", 
 					  usage="<@person|#channel|people|channels> <time>")
 	async def stats_most(self, ctx, *args):
 		resp, emb = self.message_handle(ctx, args, self.person_stats_all, self.channel_stats_all)
@@ -208,7 +208,7 @@ class Stats(commands.Cog):
 
 	def stats_error(self, args):
 		if len(args)<2:
-			resp = "You need to send me a person/channel and a time frame"
+			resp = "You need to send me a person/channel and a time frame\n**Examples**:\n\t`!stats @Jules 24 hours`\n\t`!more-stats #general 1 week`\n\t`!most-stats everyone 1 month`\n\t`!stats channels all time`"
 			return(True, resp)
 
 		# check for a valid time frame
@@ -223,8 +223,8 @@ class Stats(commands.Cog):
 		name = args[0].lower()
 		if ctx.message.mentions:
 			person = ctx.message.mentions[0]
-		elif name == 'people':
-			person = MyPerson('*','Everyone')
+		elif name == 'channels':
+			person = MyClass('*','Everyone')
 		else:
 			for per in ctx.guild.members:
 				if per.display_name.lower() == name:
@@ -237,8 +237,8 @@ class Stats(commands.Cog):
 		name = args[0].lower()
 		if ctx.message.channel_mentions:
 			channel = ctx.message.channel_mentions[0]
-		elif name == 'channels':
-			channel = MyClass('*','All Channels')
+		elif name == 'people' or name == 'everyone':
+			channel = MyPerson('*','All channels')
 		else:
 			for ch in ctx.guild.channels:
 				if ch.name == name:
