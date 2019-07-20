@@ -27,6 +27,7 @@ class Stats(commands.Cog):
 		await ctx.send(resp,embed=emb)
 
 	@commands.command(name="more-stats",
+					  aliases=['stats-more'],
 					  help="Get MORE stats, you nosier person\nTime can be 24 hours, 1 week, 1 month, or all time", 
 					  usage="<@person|#channel|people|channels> <time>")
 	async def stats_more(self, ctx, *args):
@@ -34,6 +35,7 @@ class Stats(commands.Cog):
 		await ctx.send(resp,embed=emb)
 
 	@commands.command(name="most-stats",
+					  aliases=['stats-most'],
 					  help="Get the most stats, you nosiest person\nTime can be 24 hours, 1 week, 1 month, or all time", 
 					  usage="<@person|#channel|people|channels> <time>")
 	async def stats_most(self, ctx, *args):
