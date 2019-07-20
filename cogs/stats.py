@@ -9,11 +9,13 @@ class MyPerson():
 	def __init__(self, id, mention):
 		self.id = id
 		self.mention = mention
+		self.display_name = mention
 
 class MyClass():
 	def __init__(self, id, mention):
 		self.id = id
 		self.mention = mention
+		self.display_name = mention
 
 class Stats(commands.Cog):
 	def __init__(self, bot):
@@ -83,9 +85,7 @@ class Stats(commands.Cog):
 		for entry in timedata:
 			for chs in entry.values():
 				for ch, msgnum in chs.items():
-					if chid == '*':
-						calc += msgnum
-					elif ch == chid:
+					if (ch == chid) or (chid == '*'):
 						calc += msgnum
 		resp = "There have been **{}** messages sent in {} in the past **{}**".format(str(calc), channel.mention, timestr)
 		emb = discord.Embed(description=resp,color=settings.STATS_COLOR)
@@ -102,6 +102,14 @@ class Stats(commands.Cog):
 						pdata[ch] += msgnum
 					else:
 						pdata[ch] = msgnum
+			elif pid == '*':
+				for chs in entry.values():
+					for ch, msgnum in chs.items():
+						if ch in pdata:
+							pdata[ch] += msgnum
+						else:
+							pdata[ch] = msgnum
+
 		datalist = list(pdata.items())
 		datalist.sort(key=lambda x: x[1],reverse=True)
 
@@ -124,7 +132,7 @@ class Stats(commands.Cog):
 		for entry in timedata:
 			for pid in entry:
 				for ch, msgnum in entry[pid].items():
-					if ch == chid:
+					if (ch == chid) or (chid == '*'):
 						if pid in pdata:
 							pdata[pid] += msgnum
 						else:
@@ -155,6 +163,13 @@ class Stats(commands.Cog):
 						pdata[ch] += msgnum
 					else:
 						pdata[ch] = msgnum
+			elif pid == '*':
+				for chs in entry.values():
+					for ch, msgnum in chs.items():
+						if ch in pdata:
+							pdata[ch] += msgnum
+						else:
+							pdata[ch] = msgnum
 		datalist = list(pdata.items())
 		datalist.sort(key=lambda x: x[1],reverse=True)
 
@@ -174,7 +189,7 @@ class Stats(commands.Cog):
 		for entry in timedata:
 			for pid in entry:
 				for ch, msgnum in entry[pid].items():
-					if ch == chid:
+					if (ch == chid) or (chid == '*'):
 						if pid in pdata:
 							pdata[pid] += msgnum
 						else:
