@@ -4,6 +4,7 @@ from discord.ext import commands
 from data import data
 from helpers import *
 import settings
+import re
 
 
 class Convert(commands.Cog):
@@ -22,31 +23,31 @@ class Convert(commands.Cog):
 							Note: commas cannot be used to indicate decimals", 
 					  usage="<number> <unit> [to <unit>]")
 	async def convert(self, ctx, *args):
+		args = self.reformat_args(args)
 		err, resp = self.errors(args)
 		if err:
 			await ctx.send(resp)
 			return
 
-		argsl = [x.lower() for x in args]
-		unit = argsl[1]
-		num = float(argsl[0].replace(',',''))
+		unit = args[1]
+		num = float(args[0])
 		msg = ''
 
 		if unit in self.tempwords:
-			msg,desc = self.temperature(argsl)
+			msg,desc = self.temperature(args)
 		elif unit in self.weightwords:
-			msg,desc = self.weight(argsl)
-		elif 'to' in argsl:
-			msg,desc = self.len_specific(argsl)
+			msg,desc = self.weight(args)
+		elif 'to' in args:
+			msg,desc = self.len_specific(args)
 		elif unit in self.meterwords:
 			if num > 10:
-				msg,desc = self.long_len(argsl)
+				msg,desc = self.long_len(args)
 			else:
-				msg,desc = self.short_len(argsl)
+				msg,desc = self.short_len(args)
 		elif (unit in self.long_lenwords_m) or (unit in self.long_lenwords_i):
-			msg,desc = self.long_len(argsl)
+			msg,desc = self.long_len(args)
 		elif (unit in self.short_lenwords_m) or (unit in self.short_lenwords_i):
-			msg,desc = self.short_len(argsl)
+			msg,desc = self.short_len(args)
 		else:
 			msg = 'I don\'t know what that unit is :('
 			desc = 'Temperature: F, C\nLength: cm, m, km, in, ft, yd, mi\nWeight: kg, lb'
@@ -310,6 +311,21 @@ class Convert(commands.Cog):
 						return(True, 'I don\'t know what that second unit is')
 
 		return(False,'')
+
+	def reformat_args(self, args):
+		newargs = [x.lower() for x in args]
+		newargs[0] = newargs[0].replace(',','')
+		try:
+			test = float(newargs[0])
+		except:
+			numbre = re.compile('\d+\.?\d*')
+			numb = numbre.match(newargs[0]).group()
+			unit = newargs[0][len(numb):]
+
+			newargs[0] = numb
+			newargs.insert(1, unit)
+
+		return newargs
 
 
 
