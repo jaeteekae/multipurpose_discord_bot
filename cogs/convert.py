@@ -306,7 +306,8 @@ class Convert(commands.Cog):
 			newunit = args[3].lower()
 			if (newunit not in self.long_lenwords_m) and (newunit not in self.long_lenwords_i):
 				if (newunit not in self.short_lenwords_m) and (newunit not in self.short_lenwords_i):
-					return(True, 'I don\'t know what that second unit is')
+					if (newunit not in self.tempwords) and (newunit not in self.weightwords):
+						return(True, 'I don\'t know what that second unit is')
 
 		return(False,'')
 

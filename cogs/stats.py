@@ -45,6 +45,7 @@ class Stats(commands.Cog):
 		await ctx.send(resp,embed=emb)
 
 	def message_handle(self, ctx, args, pers_func, chan_func):
+		args = list(args)
 		error, resp = self.stats_error(args)
 		if error:
 			return(resp, None)
@@ -222,9 +223,14 @@ class Stats(commands.Cog):
 			return(stats,time)
 
 	def stats_error(self, args):
-		if len(args)<2:
+		if len(args)<1:
 			resp = "You need to send me a person/channel and a time frame\n**Examples**:\n\t`!stats @Jules 24 hours`\n\t`!more-stats #general 1 week`\n\t`!most-stats everyone 1 month`\n\t`!stats channels all time`"
 			return(True, resp)
+
+		# default to 1 day if no time argument is supplied
+		if len(args)<2:
+			args.append('24')
+			args.append('hours')
 
 		# check for a valid time frame
 		for w in args[1:]:
