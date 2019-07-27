@@ -99,14 +99,6 @@ class Stats(commands.Cog):
 
 		emb = discord.Embed(description=desc, color=settings.STATS_COLOR)
 		await ctx.send(resp,embed=emb)
-	
-	@commands.command()
-	async def testing123(self, ctx, *args):
-		mem = ctx.author
-		if str(mem.id)==self.my_id:
-			print('SADNESS')
-		else:	
-			await mem.edit(nick='lolololol')
 
 	def message_handle(self, ctx, args, pers_func, chan_func):
 		args = list(args)
