@@ -51,12 +51,17 @@ class Stats(commands.Cog):
 		dethroned = []
 		usurpers = []
 		maintainers = []
+		datalist = []
 
 		timedata, _ = self.stats_for_time(['24'])
-		datalist = self.channel_data(timedata, '*')
-		datalist = [x for (x,y) in datalist]
-		if self.my_id in datalist:
-			datalist.remove(self.my_id)
+		datalist_wbot = self.channel_data(timedata, '*')
+		datalist_wbot = [x for (x,y) in datalist_wbot]
+		for memid in datalist_wbot:
+			if memid == self.my_id:
+				continue
+			mem = ctx.guild.get_member(int(memid))
+			if mem and not mem.bot:
+				datalist.append(memid)
 		datalist = datalist[:5]
 
 		# remove dethroned members
@@ -78,7 +83,7 @@ class Stats(commands.Cog):
 				mem = ctx.guild.get_member(int(pid))
 				await mem.edit(nick=(mem.display_name+self.top_emoji))
 
-		resp = ':guardsman: **Hear Ye Hear Ye! Please rise for your new royal family** :guardsman:'
+		resp = ':guardsman: **Hear Ye Hear Ye! Please rise for your new royal family!** :guardsman:'
 		desc = ''
 
 		dethroned = list(map(lambda x: '<@{}>'.format(x), dethroned))
