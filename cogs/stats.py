@@ -21,6 +21,7 @@ class Stats(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
 		self.timewords = ['24', 'day', 'twenty', 'week', 'month', 'all', 'alltime', 'all-time']
+		self.top_emoji = '👑'
 
 	@commands.command(help="Get some stats, you nosy person\nTime can be 24 hours, 1 week, 1 month, or all time\nExamples:\n\t!stats @Jules 24 hours\n\t!more-stats #general 1 week\n\t!most-stats everyone 1 month\n\t!stats channels all time", 
 					  usage="<@person|#channel|people|channels> <time>")
@@ -42,6 +43,59 @@ class Stats(commands.Cog):
 					  usage="<@person|#channel|people|channels> <time>")
 	async def stats_most(self, ctx, *args):
 		resp, emb = self.message_handle(ctx, args, self.person_stats_all, self.channel_stats_all)
+		await ctx.send(resp,embed=emb)
+
+	@commands.command(name="give-awards",
+					  help="Hand out some superdy duper special awards to the people who spend all day on this darn thing")
+	async def give_awards(self, ctx, *args):
+		dethroned = []
+		usurpers = []
+		maintainers = []
+
+		timedata, _ = self.stats_for_time('24')
+		datalist = self.channel_data(timedata, '*')
+		datalist = datalist[:5]
+		datalist = [x for (x,y) in datalist]
+
+		# remove dethroned members
+		for mem in ctx.guild.members:
+			if mem.display_name[-1:] == self.top_emoji:
+				pid = str(mem.id)
+				if pid in datalist:
+					maintainers.append(pid)
+				else:
+					dethroned.append(pid)
+					await mem.edit('nick',mem.display_name[:-1])
+
+		# add the usurpers
+		for pid in datalist:
+			if pid in maintainers:
+				continue
+			else:
+				usurpers.append(pid)
+				mem = ctx.guild.get_member(int(pid))
+				await mem.edit('nick',mem.display_name+self.top_emoji)
+
+		resp = '💂‍♂️ Hear Ye Hear Ye! Please rise for your new royal family 💂‍♂️'
+		desc = ''
+
+		dethroned = list(map(lambda x: '<@{}>'.format(x), dethroned))
+		usurpers = list(map(lambda x: '<@{}>'.format(x), usurpers))
+		maintainers = list(map(lambda x: '<@{}>'.format(x), maintainers))
+		if len(usurpers) > 0:
+			desc += 'The throne had been usurped by {}!'.format(', '.join(usurpers))
+
+		if len(maintainers) > 0:
+			if len(desc) > 0:
+				desc += '\n\n'
+			desc += '{} have maintained their crown!'.format(', '.join(maintainers))
+
+		if len(dethroned) > 0:
+			if len(desc) > 0:
+				desc += '\n\n'
+			desc += '{} have been dethroned!'.format(', '.join(dethroned))
+
+		emb = discord.Embed(description=desc, color=settings.STATS_COLOR)
 		await ctx.send(resp,embed=emb)
 
 	def message_handle(self, ctx, args, pers_func, chan_func):
@@ -95,24 +149,7 @@ class Stats(commands.Cog):
 	def person_stats_top_5(self, person, timedata, timestr):
 		desc = ''
 		pid = str(person.id)
-		pdata = {}
-		for entry in timedata:
-			if pid in entry:
-				for ch, msgnum in entry[pid].items():
-					if ch in pdata:
-						pdata[ch] += msgnum
-					else:
-						pdata[ch] = msgnum
-			elif pid == '*':
-				for chs in entry.values():
-					for ch, msgnum in chs.items():
-						if ch in pdata:
-							pdata[ch] += msgnum
-						else:
-							pdata[ch] = msgnum
-
-		datalist = list(pdata.items())
-		datalist.sort(key=lambda x: x[1],reverse=True)
+		datalist = self.person_data(timedata, pid)
 
 		for x in range(5):
 			if x >= len(datalist):
@@ -129,18 +166,7 @@ class Stats(commands.Cog):
 		desc = ''
 		chid = str(channel.id)
 
-		pdata = {}
-		for entry in timedata:
-			for pid in entry:
-				for ch, msgnum in entry[pid].items():
-					if (ch == chid) or (chid == '*'):
-						if pid in pdata:
-							pdata[pid] += msgnum
-						else:
-							pdata[pid] = msgnum
-		datalist = list(pdata.items())
-		datalist.sort(key=lambda x: x[1],reverse=True)
-
+		datalist = self.channel_data(timedata, chid)
 		for x in range(5):
 			if x >= len(datalist):
 				break
@@ -152,27 +178,10 @@ class Stats(commands.Cog):
 		emb = discord.Embed(description=desc,color=settings.STATS_COLOR)
 		return(resp, emb)
 
-	# I'd like to personally apologize to my professors for copying this code
 	def person_stats_all(self, person, timedata, timestr):
 		desc = ''
 		pid = str(person.id)
-		pdata = {}
-		for entry in timedata:
-			if pid in entry:
-				for ch, msgnum in entry[pid].items():
-					if ch in pdata:
-						pdata[ch] += msgnum
-					else:
-						pdata[ch] = msgnum
-			elif pid == '*':
-				for chs in entry.values():
-					for ch, msgnum in chs.items():
-						if ch in pdata:
-							pdata[ch] += msgnum
-						else:
-							pdata[ch] = msgnum
-		datalist = list(pdata.items())
-		datalist.sort(key=lambda x: x[1],reverse=True)
+		datalist = self.person_data(timedata, pid)
 
 		for (ch,num) in datalist:
 			line = '<#{}>: **{}** messages\n'.format(ch, str(num))
@@ -186,17 +195,7 @@ class Stats(commands.Cog):
 		desc = ''
 		chid = str(channel.id)
 
-		pdata = {}
-		for entry in timedata:
-			for pid in entry:
-				for ch, msgnum in entry[pid].items():
-					if (ch == chid) or (chid == '*'):
-						if pid in pdata:
-							pdata[pid] += msgnum
-						else:
-							pdata[pid] = msgnum
-		datalist = list(pdata.items())
-		datalist.sort(key=lambda x: x[1],reverse=True)
+		datalist = self.channel_data(timedata, chid)
 
 		for (pid,num) in datalist:
 			line = '<@{}>: **{}** messages\n'.format(pid, str(num))
@@ -266,6 +265,42 @@ class Stats(commands.Cog):
 					channel = ch
 					break
 		return channel
+
+	def person_data(self, timedata, pid):
+		pdata = {}
+		for entry in timedata:
+			if pid in entry:
+				for ch, msgnum in entry[pid].items():
+					if ch in pdata:
+						pdata[ch] += msgnum
+					else:
+						pdata[ch] = msgnum
+			elif pid == '*':
+				for chs in entry.values():
+					for ch, msgnum in chs.items():
+						if ch in pdata:
+							pdata[ch] += msgnum
+						else:
+							pdata[ch] = msgnum
+
+		datalist = list(pdata.items())
+		datalist.sort(key=lambda x: x[1],reverse=True)
+		return(datalist)
+
+	def channel_data(self, timedata, chid):
+		pdata = {}
+		for entry in timedata:
+			for pid in entry:
+				for ch, msgnum in entry[pid].items():
+					if (ch == chid) or (chid == '*'):
+						if pid in pdata:
+							pdata[pid] += msgnum
+						else:
+							pdata[pid] = msgnum
+		datalist = list(pdata.items())
+		datalist.sort(key=lambda x: x[1],reverse=True)
+
+
 
 
 def setup(bot):
