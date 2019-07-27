@@ -22,6 +22,7 @@ class Stats(commands.Cog):
 		self.bot = bot
 		self.timewords = ['24', 'day', 'twenty', 'week', 'month', 'all', 'alltime', 'all-time']
 		self.top_emoji = '👑'
+		self.my_id = '246457096718123019'
 
 	@commands.command(help="Get some stats, you nosy person\nTime can be 24 hours, 1 week, 1 month, or all time\nExamples:\n\t!stats @Jules 24 hours\n\t!more-stats #general 1 week\n\t!most-stats everyone 1 month\n\t!stats channels all time", 
 					  usage="<@person|#channel|people|channels> <time>")
@@ -45,17 +46,18 @@ class Stats(commands.Cog):
 		resp, emb = self.message_handle(ctx, args, self.person_stats_all, self.channel_stats_all)
 		await ctx.send(resp,embed=emb)
 
-	@commands.command(name="give-awards",
-					  help="Hand out some superdy duper special awards to the people who spend all day on this darn thing")
-	async def give_awards(self, ctx, *args):
+	@commands.command(help="Hand out some superdy duper special crowns to the people who spend all day on this darn server")
+	async def coronation(self, ctx, *args):
 		dethroned = []
 		usurpers = []
 		maintainers = []
 
-		timedata, _ = self.stats_for_time('24')
+		timedata, _ = self.stats_for_time(['24'])
 		datalist = self.channel_data(timedata, '*')
-		datalist = datalist[:5]
 		datalist = [x for (x,y) in datalist]
+		if self.my_id in datalist:
+			datalist.remove(self.my_id)
+		datalist = datalist[:5]
 
 		# remove dethroned members
 		for mem in ctx.guild.members:
@@ -65,7 +67,7 @@ class Stats(commands.Cog):
 					maintainers.append(pid)
 				else:
 					dethroned.append(pid)
-					await mem.edit('nick',mem.display_name[:-1])
+					await mem.edit(nick=(mem.display_name[:-1]))
 
 		# add the usurpers
 		for pid in datalist:
@@ -74,9 +76,9 @@ class Stats(commands.Cog):
 			else:
 				usurpers.append(pid)
 				mem = ctx.guild.get_member(int(pid))
-				await mem.edit('nick',mem.display_name+self.top_emoji)
+				await mem.edit(nick=(mem.display_name+self.top_emoji))
 
-		resp = '💂‍♂️ Hear Ye Hear Ye! Please rise for your new royal family 💂‍♂️'
+		resp = ':guardsman: **Hear Ye Hear Ye! Please rise for your new royal family** :guardsman:'
 		desc = ''
 
 		dethroned = list(map(lambda x: '<@{}>'.format(x), dethroned))
@@ -97,6 +99,14 @@ class Stats(commands.Cog):
 
 		emb = discord.Embed(description=desc, color=settings.STATS_COLOR)
 		await ctx.send(resp,embed=emb)
+	
+	@commands.command()
+	async def testing123(self, ctx, *args):
+		mem = ctx.author
+		if str(mem.id)==self.my_id:
+			print('SADNESS')
+		else:	
+			await mem.edit(nick='lolololol')
 
 	def message_handle(self, ctx, args, pers_func, chan_func):
 		args = list(args)
@@ -299,6 +309,7 @@ class Stats(commands.Cog):
 							pdata[pid] = msgnum
 		datalist = list(pdata.items())
 		datalist.sort(key=lambda x: x[1],reverse=True)
+		return(datalist)
 
 
 
