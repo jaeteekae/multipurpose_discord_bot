@@ -9,6 +9,7 @@ TESTING_PREFIX = "&"
 
 DATA_FOLDER = "data"
 PRAISE_FOLDER = 'praise_gifs'
+MAIN_GUILD_NAME = 'Ep3: The GC Tries Discord'
 
 AWAY_FILE = os.path.join(DATA_FOLDER,"away.json")
 AWAY_COLOR = 0x72FF7B # lime green

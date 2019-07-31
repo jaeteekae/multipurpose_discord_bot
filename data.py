@@ -49,6 +49,9 @@ class DataObj:
         self.stats = stats
         self.stats_initted = True
 
+    def set_guild(self, guild):
+        self.guild = guild
+
     def write_to_disk(self):
         self.remove_old_links()
         with open(settings.AWAY_FILE,'w') as f:
@@ -118,6 +121,35 @@ class DataObj:
             else:
                 this_hour[personid][channelid] += 1
 
+    def filter_bots(self, s):
+        stats = []
+        for e in s:
+            entry = e.copy()
+            pids = e.keys()
+            for p in pids:
+                memobj = data.guild.get_member(int(p))
+                if not memobj or memobj.bot:
+                    entry.pop(p)
+            stats.append(entry)
+        return stats
+
+    def get_day_stats(self):
+        s = self.stats['hours'][-24:]
+        return self.filter_bots(s)
+
+    def get_week_stats(self):
+        s = self.stats['days'][-7:]
+        return self.filter_bots(s)
+
+    def get_month_stats(self):
+        s = self.stats['days']
+        return self.filter_bots(s)
+
+    def get_all_stats(self):
+        stats = self.stats['days'].copy()
+        allt = self.stats['all_time'].copy()
+        stats.append(allt)
+        return self.filter_bots(stats)
 
 
 data = DataObj()

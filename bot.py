@@ -110,9 +110,13 @@ async def dm(ctx):
 
 @bot.event
 async def on_ready():
+    for guild in bot.guilds:
+        if guild.name == settings.MAIN_GUILD_NAME:
+            main_guild = guild
+            data.set_guild(main_guild)
     if not data.stats_initted:
         memb_stats = {}
-        members = list(filter(lambda x: not x.bot, bot.guilds[0].members))
+        members = list(filter(lambda x: not x.bot, main_guild.members))
         for m in members:
             memb_stats[str(m.id)] = {}
         stats = {'hours': [{}],

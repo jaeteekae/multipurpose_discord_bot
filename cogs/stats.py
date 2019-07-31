@@ -53,19 +53,19 @@ class Stats(commands.Cog):
 		maintainers = []
 		datalist = []
 
-		timedata, _ = self.stats_for_time(['24'])
+		timedata = data.get_day_stats()
 		datalist_wbot = self.channel_data(timedata, '*')
 		datalist_wbot = [x for (x,y) in datalist_wbot]
 		for memid in datalist_wbot:
 			if memid == self.my_id:
 				continue
-			mem = ctx.guild.get_member(int(memid))
+			mem = data.guild.get_member(int(memid))
 			if mem and not mem.bot:
 				datalist.append(memid)
 		datalist = datalist[:5]
 
 		# remove dethroned members
-		for mem in ctx.guild.members:
+		for mem in data.guild.members:
 			if mem.display_name[-1:] == self.top_emoji:
 				pid = str(mem.id)
 				if pid in datalist:
@@ -80,7 +80,7 @@ class Stats(commands.Cog):
 				continue
 			else:
 				usurpers.append(pid)
-				mem = ctx.guild.get_member(int(pid))
+				mem = data.guild.get_member(int(pid))
 				await mem.edit(nick=(mem.display_name+self.top_emoji))
 
 		resp = ':guardsman: **Hear Ye Hear Ye! Please rise for your new royal family!** :guardsman:'
@@ -90,7 +90,7 @@ class Stats(commands.Cog):
 		usurpers = list(map(lambda x: '<@{}>'.format(x), usurpers))
 		maintainers = list(map(lambda x: '<@{}>'.format(x), maintainers))
 		if len(usurpers) > 0:
-			desc += 'The throne had been usurped by {}!'.format(', '.join(usurpers))
+			desc += 'The throne has been usurped by {}!'.format(', '.join(usurpers))
 
 		if len(maintainers) > 0:
 			if len(desc) > 0:
@@ -217,16 +217,13 @@ class Stats(commands.Cog):
 		time = time.lower()
 
 		if ('24' in time) or ('twenty' in time) or ('day' in time):
-			return(data.stats['hours'][-24:],time)
+			return(data.get_day_stats(),time)
 		elif 'week' in time:
-			return(data.stats['days'][-7:],time)
+			return(data.get_week_stats(),time)
 		elif 'month' in time:
-			return(data.stats['days'],time)
+			return(data.get_month_stats(),time)
 		elif ('all' in time) or ('alltime' in time) or ('all-time' in time):
-			stats = data.stats['days'].copy()
-			allt = data.stats['all_time'].copy()
-			stats.append(allt)
-			return(stats,time)
+			return(data.get_all_stats(),time)
 
 	def stats_error(self, args):
 		if len(args)<1:
@@ -253,7 +250,7 @@ class Stats(commands.Cog):
 		elif name == 'channels':
 			person = MyClass('*','Everyone')
 		else:
-			for per in ctx.guild.members:
+			for per in data.guild.members:
 				if per.display_name.lower() == name:
 					person = per
 					break
@@ -267,7 +264,7 @@ class Stats(commands.Cog):
 		elif name == 'people' or name == 'everyone':
 			channel = MyPerson('*','All channels')
 		else:
-			for ch in ctx.guild.channels:
+			for ch in data.guild.channels:
 				if ch.name == name:
 					channel = ch
 					break
