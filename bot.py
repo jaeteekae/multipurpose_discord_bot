@@ -89,7 +89,7 @@ async def on_message(message):
 @bot.event
 async def on_reaction_add(reaction, user):
     if type(reaction.emoji) != str:
-        return
+        data.track_emoji_react(reaction.emoji)
 
     if reaction.message.channel.id == settings.RECEIPTS_CHANNEL_ID:
         if reaction.emoji == '🗑':

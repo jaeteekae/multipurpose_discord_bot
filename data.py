@@ -136,6 +136,15 @@ class DataObj:
             else:
                 emostats[emojid] = 1
 
+    def track_emoji_react(self, emoji):
+        eid = str(emoji.id)
+        emostats = self.stats['emojis']
+
+        if eid in emostats:
+            emostats[eid] += 1
+        else:
+            emostats[eid] = 1
+
     def filter_bots(self, s):
         stats = []
         for e in s:
