@@ -2,6 +2,7 @@ import settings
 import json, os
 from datetime import datetime
 
+# Yes I know I should be using a proper database at this point ¯\_(ツ)_/¯
 class DataObj:
 
     def __init__(self):
@@ -40,6 +41,8 @@ class DataObj:
             with open(settings.STATS_FILE,'r') as f:
                 obj = json.load(f)
                 self.stats = obj
+            if 'emojis' not in self.stats:
+                self.stats['emojis'] = {}
             self.stats_initted = True
         except:
             self.stats = {}
@@ -122,7 +125,16 @@ class DataObj:
                 this_hour[personid][channelid] += 1
 
     def track_emoji(self, msg):
-        pass
+        emostats = self.stats['emojis']
+        while('<:' in msg):
+            msg = msg[msg.find('<:')+2:]
+            msg = msg[msg.find(':')+1:]
+            emojid = msg[:msg.find('>')]
+
+            if emojid in emostats:
+                emostats[emojid] += 1
+            else:
+                emostats[emojid] = 1
 
     def filter_bots(self, s):
         stats = []

@@ -41,3 +41,10 @@ def get_emoji(guild, name):
     else:
         return ''
 
+def get_emoji_by_id(guild, eid):
+    emoji = discord.utils.get(guild.emojis, id=eid)
+    if emoji:
+        return str(emoji)
+    else:
+        return ''
+

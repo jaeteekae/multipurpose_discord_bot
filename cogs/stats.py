@@ -46,6 +46,38 @@ class Stats(commands.Cog):
 		resp, emb = self.message_handle(ctx, args, self.person_stats_all, self.channel_stats_all)
 		await ctx.send(resp,embed=emb)
 
+	@commands.command(name="top-emojis",
+					  aliases=['emojis-top'],
+					  help="Get a list of the most used emojis in the channel")
+	async def top_emojis(self, ctx, *args):
+		estats = self.emoji_stats()
+		estats.sort(key=lambda x: x[1],reverse=True)
+		estats = estats[:5]
+
+		desc = ""
+		for eid, num in estats:
+			desc += "{}: {} uses\n".format(get_emoji_by_id(data.guild,int(eid)),str(num))
+
+		resp = "The top 5 most used emojis are:"
+		emb = discord.Embed(description=desc, color=settings.STATS_COLOR)		
+		await ctx.send(resp, embed=emb)
+
+	@commands.command(name="bottom-emojis",
+					  aliases=['emojis-bottom'],
+					  help="Get a list of the least used emojis in the channel")
+	async def bottom_emojis(self, ctx, *args):
+		estats = self.emoji_stats()
+		estats.sort(key=lambda x: x[1])
+		estats = estats[:5]
+		
+		desc = ""
+		for eid, num in estats:
+			desc += "{}: {} uses\n".format(get_emoji_by_id(data.guild,int(eid)),str(num))
+
+		resp = "The 5 least used emojis are:"
+		emb = discord.Embed(description=desc, color=settings.STATS_COLOR)
+		await ctx.send(resp, embed=emb)
+
 	@commands.command(help="Hand out some superdy duper special crowns to the people who spend all day on this darn server")
 	async def coronation(self, ctx, *args):
 		dethroned = []
@@ -304,6 +336,20 @@ class Stats(commands.Cog):
 		datalist = list(pdata.items())
 		datalist.sort(key=lambda x: x[1],reverse=True)
 		return(datalist)
+
+	def emoji_stats(self):
+		estats = data.stats['emojis']
+		eusage = []
+		emojis = data.guild.emojis
+
+		for e in emojis:
+			eid = str(e.id)
+			if eid in estats:
+				eusage.append((eid, estats[eid]))
+			else:
+				eusage.append((eid, 0))
+
+		return eusage
 
 
 

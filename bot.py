@@ -80,7 +80,7 @@ async def on_message(message):
         # track stats
         if settings.PRODUCTION:
             data.track_message(str(message.channel.id),str(message.author.id))
-        data.track_emoji(message.content)
+            data.track_emoji(message.content)
 
     # execute prefix commands
     await bot.process_commands(message)
@@ -125,7 +125,8 @@ async def on_ready():
             memb_stats[str(m.id)] = {}
         stats = {'hours': [{}],
                  'days':  [{}],
-                 'all_time': memb_stats}
+                 'all_time': memb_stats,
+                 'emojis': {}}
         data.set_stats(stats)
 
 if settings.PRODUCTION:
