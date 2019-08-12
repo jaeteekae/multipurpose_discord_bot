@@ -59,6 +59,9 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
+    if "’" in message.content:
+        message.content = message.content.replace("’","'")
+
     # check for away mentions
     for ment in message.mentions:
         if str(ment.id) in data.away:
@@ -77,6 +80,7 @@ async def on_message(message):
         # track stats
         if settings.PRODUCTION:
             data.track_message(str(message.channel.id),str(message.author.id))
+        data.track_emoji(message.content)
 
     # execute prefix commands
     await bot.process_commands(message)

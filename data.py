@@ -93,8 +93,8 @@ class DataObj:
 
     def turnover_hour(self):
         self.stats['hours'].append({})
-        if len(self.stats['hours']>25):
-            self.stats['hours'] = self.stats['hours'][1:]
+        if len(self.stats['hours'])>25:
+            self.stats['hours'] = self.stats['hours'][-24:]
 
     def track_message(self, channelid, personid):
         today = self.stats['days'][-1]
@@ -120,6 +120,9 @@ class DataObj:
             # not the first post, so increment
             else:
                 this_hour[personid][channelid] += 1
+
+    def track_emoji(self, msg):
+        pass
 
     def filter_bots(self, s):
         stats = []
