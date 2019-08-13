@@ -56,7 +56,7 @@ class Stats(commands.Cog):
 
 		desc = ""
 		for eid, num in estats:
-			desc += "{}: {} uses\n".format(get_emoji_by_id(data.guild,int(eid)),str(num))
+			desc += "{} : {} uses\n".format(get_emoji_by_id(data.guild,int(eid)),str(num))
 
 		resp = "The top 5 most used emojis are:"
 		emb = discord.Embed(description=desc, color=settings.STATS_COLOR)		
@@ -72,9 +72,27 @@ class Stats(commands.Cog):
 		
 		desc = ""
 		for eid, num in estats:
-			desc += "{}: {} uses\n".format(get_emoji_by_id(data.guild,int(eid)),str(num))
+			desc += "{} : {} uses\n".format(get_emoji_by_id(data.guild,int(eid)),str(num))
 
 		resp = "The 5 least used emojis are:"
+		emb = discord.Embed(description=desc, color=settings.STATS_COLOR)
+		await ctx.send(resp, embed=emb)
+
+	@commands.command(name="emoji-stats",
+					  aliases=['stats-emojis', 'stats-emoji'],
+					  help="See how frequently all emojis are used")
+	async def bottom_emojis(self, ctx, *args):
+		estats = self.emoji_stats()
+		estats.sort(key=lambda x: x[1], reverse=True)
+		
+		desc = ""
+		i = 0
+		for eid, num in estats:
+			if i%5 == 0 and i!=0:
+				desc += '\n'
+			desc += " {}:`{} `".format(get_emoji_by_id(data.guild,int(eid)),str(num))
+			i += 1
+		resp = "**Total Emoji Usage:**"
 		emb = discord.Embed(description=desc, color=settings.STATS_COLOR)
 		await ctx.send(resp, embed=emb)
 
