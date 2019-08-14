@@ -47,7 +47,7 @@ class Stats(commands.Cog):
 		await ctx.send(resp,embed=emb)
 
 	@commands.command(name="top-emojis",
-					  aliases=['emojis-top'],
+					  aliases=['emojis-top','emoji-top','top-emoji'],
 					  help="Get a list of the most used emojis in the channel")
 	async def top_emojis(self, ctx, *args):
 		estats = self.emoji_stats()
@@ -63,7 +63,7 @@ class Stats(commands.Cog):
 		await ctx.send(resp, embed=emb)
 
 	@commands.command(name="bottom-emojis",
-					  aliases=['emojis-bottom'],
+					  aliases=['emojis-bottom','emoji-bottom','bottom-emoji'],
 					  help="Get a list of the least used emojis in the channel")
 	async def bottom_emojis(self, ctx, *args):
 		estats = self.emoji_stats()
@@ -81,7 +81,7 @@ class Stats(commands.Cog):
 	@commands.command(name="emoji-stats",
 					  aliases=['stats-emojis', 'stats-emoji'],
 					  help="See how frequently all emojis are used")
-	async def bottom_emojis(self, ctx, *args):
+	async def emoji_stats(self, ctx, *args):
 		estats = self.emoji_stats()
 		estats.sort(key=lambda x: x[1], reverse=True)
 		
