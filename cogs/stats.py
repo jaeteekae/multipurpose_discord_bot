@@ -50,7 +50,7 @@ class Stats(commands.Cog):
 					  aliases=['emojis-top','emoji-top','top-emoji'],
 					  help="Get a list of the most used emojis in the channel")
 	async def top_emojis(self, ctx, *args):
-		estats = self.emoji_stats()
+		estats = self.get_emoji_stats()
 		estats.sort(key=lambda x: x[1],reverse=True)
 		estats = estats[:5]
 
@@ -66,7 +66,7 @@ class Stats(commands.Cog):
 					  aliases=['emojis-bottom','emoji-bottom','bottom-emoji'],
 					  help="Get a list of the least used emojis in the channel")
 	async def bottom_emojis(self, ctx, *args):
-		estats = self.emoji_stats()
+		estats = self.get_emoji_stats()
 		estats.sort(key=lambda x: x[1])
 		estats = estats[:5]
 		
@@ -82,7 +82,7 @@ class Stats(commands.Cog):
 					  aliases=['stats-emojis', 'stats-emoji'],
 					  help="See how frequently all emojis are used")
 	async def emoji_stats(self, ctx, *args):
-		estats = self.emoji_stats()
+		estats = self.get_emoji_stats()
 		estats.sort(key=lambda x: x[1], reverse=True)
 		
 		desc = ""
@@ -355,7 +355,7 @@ class Stats(commands.Cog):
 		datalist.sort(key=lambda x: x[1],reverse=True)
 		return(datalist)
 
-	def emoji_stats(self):
+	def get_emoji_stats(self):
 		estats = data.stats['emojis']
 		eusage = []
 		emojis = data.guild.emojis
