@@ -28,6 +28,14 @@ This bot only works in a single server, and it is meant for use amongst a group 
 
 `!most-stats <@person|#channel> <time>` - see all of the channels OR all of the posters in `<time>`
 
+`!coronation` - gives the top 5 posters in the last 24 hours a 👑 emoji at the end of their nickname
+
+`!top-emojis` - returns the top 5 most used custom emojis of all time
+
+`!bottom-emojis` - returns the 5 least used custom emojis of all time
+
+`!emoji-stats` - returns the usage stats for up to 50 custom emojis
+
 #### Unit Conversion
 `!convert <number> <unit> [to <new unit>]` - converts temperature, length, and weight between imperial and metric
 
