@@ -27,7 +27,10 @@ class Stats(commands.Cog):
 	@commands.command(help="Get some stats, you nosy person\nTime can be 24 hours, 1 week, 1 month, or all time\nExamples:\n\t!stats @Jules 24 hours\n\t!more-stats #general 1 week\n\t!most-stats everyone 1 month\n\t!stats channels all time", 
 					  usage="<@person|#channel|people|channels> <time>")
 	async def stats(self, ctx, *args):
-		resp, emb = self.message_handle(ctx, args, self.person_stats, self.channel_stats)
+		if len(args) == 0:
+			resp, emb = self.message_handle(ctx, ['everyone', '24', 'hours'], self.person_stats_all, self.channel_stats_all)
+		else:
+			resp, emb = self.message_handle(ctx, args, self.person_stats, self.channel_stats)
 		await ctx.send(resp,embed=emb)
 
 	@commands.command(name="more-stats",
