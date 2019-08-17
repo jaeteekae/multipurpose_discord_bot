@@ -31,8 +31,11 @@ def send_away_msg(mem):
     timestring = generate_timestring(elapsed)
 
     el_delta = timedelta(seconds=elapsed)
-    left_at = datetime.now() - el_delta
-    since = left_at.strftime('**%I:%M%p** on %x')
+    est_to_pst = timedelta(hours=3)
+    left_at_est = datetime.now() - el_delta
+    left_at_pst = left_at_est - est_to_pst
+    since = left_at_est.strftime('**%I:%M%p EST** on %x or ')
+    since += left_at_pst.strftime('**%I:%M%p PST** on %x')
 
     titletxt = "**{}** is away!".format(mem.display_name)
     responsetxt = "__Duration__: {}\n__Since__: {}\n__Message__: {}\n🏃‍♀️".format(timestring,since,obj["message"])
