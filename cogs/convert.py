@@ -21,6 +21,7 @@ class Convert(commands.Cog):
 	@commands.command(help="Convert units between freedom and inferior\n\
 							Does temperature (°C,°F,°K), length (mi,km,m), and weight (lb,kg)\n\
 							Note: commas cannot be used to indicate decimals", 
+					  aliases=['c'],
 					  usage="<number> <unit> [to <unit>]")
 	async def convert(self, ctx, *args):
 		args = self.reformat_args(args)
