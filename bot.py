@@ -104,6 +104,10 @@ async def on_reaction_add(reaction, user):
 @bot.event
 async def on_reaction_remove(reaction, user):
     if reaction.emoji == '📌':
+        # don't unpin if there are still pin reacts on the msg
+        for r in reaction.message.reactions:
+            if r.emoji == '📌':
+                return
         await reaction.message.unpin()
 
 @bot.event
