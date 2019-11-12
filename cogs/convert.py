@@ -296,13 +296,13 @@ class Convert(commands.Cog):
 
 	def errors(self, args):
 		if len(args)<2:
-			return(True,'I don\'t know how to convert that 🤷‍♀️ (numbers and units must be separated by a space)')
+			return(True,'I don\'t know how to convert that 🤷‍♀️')
 
 		# Check number is there	
 		try:
 			num = float(args[0].replace(',',''))
 		except:
-			return(True,'I can\'t figure out what number that is :(\n(numbers and units must be separated by a space)')
+			return(True,'I can\'t figure out what number that is :(\n')
 
 		if len(args) > 3:
 			newunit = args[3].lower()
@@ -319,7 +319,7 @@ class Convert(commands.Cog):
 		try:
 			test = float(newargs[0])
 		except:
-			numbre = re.compile('\d+\.?\d*')
+			numbre = re.compile('-?\d*\.?\d*')
 			numb = numbre.match(newargs[0]).group()
 			unit = newargs[0][len(numb):]
 
