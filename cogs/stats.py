@@ -88,16 +88,27 @@ class Stats(commands.Cog):
 		estats = self.get_emoji_stats()
 		estats.sort(key=lambda x: x[1], reverse=True)
 		
+		msgs = []
 		desc = ""
 		i = 0
 		for eid, num in estats:
-			if i%5 == 0 and i!=0:
+			if i%50 == 0 and i!=0:
+				msgs.append(desc)
+				desc = ""
+			elif i%5 == 0 and i!=0:
 				desc += '\n'
 			desc += " {}:`{} `".format(get_emoji_by_id(data.guild,int(eid)),str(num))
 			i += 1
-		resp = "**Total Emoji Usage:**"
-		emb = discord.Embed(description=desc, color=settings.STATS_COLOR)
+		if i > 50:
+			msgs.append(desc)
+
+		resp = "**Total Emoji Usage (since August 12, 2019):**"
+		emb = discord.Embed(description=msgs[0], color=settings.STATS_COLOR)
 		await ctx.send(resp, embed=emb)
+
+		for m in msgs[1:]:
+			emb = discord.Embed(description=m, color=settings.STATS_COLOR)
+			await ctx.send(embed=emb)			
 
 	@commands.command(help="Hand out some superdy duper special crowns to the people who spend all day on this darn server")
 	async def coronation(self, ctx, *args):
