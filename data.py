@@ -45,11 +45,18 @@ class DataObj:
             self.receipts = []
 
         try:
+            with open(settings.BET_FILE,'r') as f:
+                obj = json.load(f)
+                self.bets = obj
+        except:
+            self.bets = {"open_pools": [],
+                         "previous_pools": [],
+                         "members": []}
+
+        try:
             with open(settings.STATS_FILE,'r') as f:
                 obj = json.load(f)
                 self.stats = obj
-            if 'emojis' not in self.stats:
-                self.stats['emojis'] = {}
             self.stats_initted = True
         except:
             self.stats = {}
@@ -74,6 +81,8 @@ class DataObj:
             json.dump(self.stats,f)
         with open(settings.RECEIPT_FILE,'w') as f:
             json.dump(self.receipts,f)
+        with open(settings.BET_FILE,'w') as f:
+            json.dump(self.bets,f)
 
     def remove_old_links(self):
         now = datetime.now()
@@ -184,6 +193,8 @@ class DataObj:
         stats.append(allt)
         return self.filter_bots(stats)
 
+
+    ##### RECEIPTS #####
     def add_receipt(self, msg_id):
         msg = int(msg_id)
         if msg not in self.receipts:
