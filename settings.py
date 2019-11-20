@@ -23,6 +23,7 @@ GIF_FOLDER = os.path.join(STATIC_FOLDER,"gifs")
 GIF_COLOR = 0xa175c4 # soft purple
 
 TMP_IMG_FOLDER = os.path.join(STATIC_FOLDER,"tmp")
+RECEIPT_FILE = os.path.join(DATA_FOLDER,"receipts.json")
 RECEIPT_COLOR = 0xc5fffc # pale blue
 
 LINKS_FILE = os.path.join(DATA_FOLDER,"gen_links.json")

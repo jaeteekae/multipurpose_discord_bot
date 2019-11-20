@@ -38,6 +38,13 @@ class DataObj:
             self.bdays = {}
 
         try:
+            with open(settings.RECEIPT_FILE,'r') as f:
+                obj = json.load(f)
+                self.receipts = obj
+        except:
+            self.receipts = []
+
+        try:
             with open(settings.STATS_FILE,'r') as f:
                 obj = json.load(f)
                 self.stats = obj
@@ -65,6 +72,8 @@ class DataObj:
             json.dump(self.links,f)
         with open(settings.STATS_FILE,'w') as f:
             json.dump(self.stats,f)
+        with open(settings.RECEIPT_FILE,'w') as f:
+            json.dump(self.receipts,f)
 
     def remove_old_links(self):
         now = datetime.now()
@@ -174,6 +183,20 @@ class DataObj:
         allt = self.stats['all_time'].copy()
         stats.append(allt)
         return self.filter_bots(stats)
+
+    def add_receipt(self, msg_id):
+        msg = int(msg_id)
+        if msg not in self.receipts:
+            self.receipts.append(msg)
+
+    def remove_receipt(self, msg_id):
+        msg = int(msg_id)
+        if msg in self.receipts:
+            self.receipts.remove(msg)
+
+    def already_receipted(self, msg_id):
+        return int(msg_id) in self.receipts
+
 
 
 data = DataObj()

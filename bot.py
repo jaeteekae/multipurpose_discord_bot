@@ -102,8 +102,10 @@ async def on_reaction_add(reaction, user):
         await reaction.message.pin()
 
     if reaction.emoji == '🧾':
-        if reaction.count > 1:
+        if data.already_receipted(reaction.message.id):
             return
+        else:
+            data.add_receipt(reaction.message.id)
         reactors = await reaction.users().flatten()
         emb = receipt_message(message=reaction.message, text=reaction.message.content, author=reaction.message.author, receipter=reactors[0])
         r_channel = bot.get_channel(settings.RECEIPTS_CHANNEL_ID)
@@ -117,6 +119,13 @@ async def on_reaction_remove(reaction, user):
             if r.emoji == '📌':
                 return
         await reaction.message.unpin()
+
+@bot.event
+async def on_message_delete(message):
+    if message.channel.id == settings.RECEIPTS_CHANNEL_ID:
+        url = message.embeds[0].author.url
+        msg_id = url[url.rfind('/')+1:]
+        data.remove_receipt(int(msg_id))
 
 @bot.event
 async def on_message_edit(before, after):
