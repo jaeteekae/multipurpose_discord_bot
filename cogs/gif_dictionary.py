@@ -13,6 +13,8 @@ class Gif_Dictionary(commands.Cog, name="Gif Dictionary"):
 
     def __init__(self, bot):
         self.bot = bot
+        if not os.path.isdir(settings.STATIC_FOLDER):
+            os.makedirs(settings.STATIC_FOLDER)
         if not os.path.isdir(settings.GIF_FOLDER):
             os.makedirs(settings.GIF_FOLDER)
 

@@ -16,7 +16,7 @@ ignore/*
 
 test.py
 
+imgs
+imgs/*
 data/*
-gifs/*
 
-praise_gifs/*

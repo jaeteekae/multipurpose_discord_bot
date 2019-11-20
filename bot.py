@@ -101,6 +101,14 @@ async def on_reaction_add(reaction, user):
     if reaction.emoji == '📌':
         await reaction.message.pin()
 
+    if reaction.emoji == '🧾':
+        if reaction.count > 1:
+            return
+        reactors = await reaction.users().flatten()
+        emb = receipt_message(message=reaction.message, text=reaction.message.content, author=reaction.message.author, receipter=reactors[0])
+        r_channel = bot.get_channel(settings.RECEIPTS_CHANNEL_ID)
+        await r_channel.send(embed=emb)
+
 @bot.event
 async def on_reaction_remove(reaction, user):
     if reaction.emoji == '📌':
@@ -149,7 +157,9 @@ extensions = ['cogs.gif_dictionary',
               'cogs.stats',
               'cogs.convert',
               # 'cogs.osha',
-              'cogs.praisebot']
+              'cogs.praisebot',
+              'cogs.bet',
+              'cogs.receipt']
 
 if __name__ == '__main__':
     for ext in extensions:

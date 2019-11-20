@@ -8,7 +8,8 @@ PREFIX = "!"
 TESTING_PREFIX = "&"
 
 DATA_FOLDER = "data"
-PRAISE_FOLDER = 'praise_gifs'
+STATIC_FOLDER = "imgs"
+PRAISE_FOLDER = os.path.join(STATIC_FOLDER,"praise_gifs")
 MAIN_GUILD_NAME = 'Ep3: The GC Tries Discord'
 
 AWAY_FILE = os.path.join(DATA_FOLDER,"away.json")
@@ -18,8 +19,11 @@ BDAY_FILE = os.path.join(DATA_FOLDER,"bdays.json")
 BDAY_COLOR = 0x494ce5 # soft blue
 
 GIF_FILE = os.path.join(DATA_FOLDER,"gif_shortcuts.json")
-GIF_FOLDER = "gifs"
+GIF_FOLDER = os.path.join(STATIC_FOLDER,"gifs")
 GIF_COLOR = 0xa175c4 # soft purple
+
+TMP_IMG_FOLDER = os.path.join(STATIC_FOLDER,"tmp")
+RECEIPT_COLOR = 0xc5fffc # pale blue
 
 LINKS_FILE = os.path.join(DATA_FOLDER,"gen_links.json")
 

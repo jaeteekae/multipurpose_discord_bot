@@ -48,3 +48,33 @@ def get_emoji_by_id(guild, eid):
     else:
         return ''
 
+def get_message_link(msg):
+    return "http://discordapp.com/channels/" + str(msg.guild.id) + "/" + str(msg.channel.id) + "/" + str(msg.id)
+
+def receipt_message(message, text, author=None, receipter=None):
+    msg_url = get_message_link(message)
+
+    emb = discord.Embed(description=text, color=RECEIPT_COLOR)
+
+    if author:
+        auth = author.display_name + " in #" + message.channel.name + ":"
+        emb.set_author(name=auth, icon_url=author.avatar_url, url=msg_url)
+    else:
+        auth = "Posted in #" + message.channel.name + ":"
+        emb.set_author(name=auth, url=msg_url)
+
+    if message.attachments:
+        url = message.attachments[0].url
+        emb.set_image(url=url)
+
+    if receipter:
+        ft_txt = "🧾ed by {}".format(receipter.display_name)
+        emb.set_footer(text=ft_txt, icon_url=receipter.avatar_url)
+
+    return emb
+
+
+
+
+
+
