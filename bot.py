@@ -167,7 +167,7 @@ extensions = ['cogs.gif_dictionary',
               'cogs.convert',
               # 'cogs.osha',
               'cogs.praisebot',
-              'cogs.bet',
+              # 'cogs.bet',
               'cogs.receipt']
 
 if __name__ == '__main__':
