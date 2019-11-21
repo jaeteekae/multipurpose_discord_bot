@@ -101,7 +101,7 @@ async def on_reaction_add(reaction, user):
     if reaction.emoji == '📌':
         await reaction.message.pin()
 
-    if reaction.emoji == '🧾':
+    if reaction.emoji == '🧾' or reaction.emoji == '📸':
         if data.already_receipted(reaction.message.id):
             return
         else:
