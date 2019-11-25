@@ -155,7 +155,7 @@ async def on_ready():
 
 if settings.PRODUCTION:
     scheduler = BackgroundScheduler()
-    scheduler.add_job(data.write_to_disk, 'cron', minute='*/30')
+    scheduler.add_job(data.write_to_disk, 'cron', minute='*/5')
     scheduler.add_job(data.turnover_stats, 'cron', hour=0, minute=1)
     scheduler.add_job(data.turnover_hour, 'cron', minute=59)
     scheduler.start()
