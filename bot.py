@@ -41,21 +41,6 @@ def send_away_msg(mem):
     responsetxt = "__Duration__: {}\n__Since__: {}\n__Message__: {}\n🏃‍♀️".format(timestring,since,obj["message"])
     return(titletxt, responsetxt)
 
-######### LINK EXTRACTION #########
-# reposts new (not posted in the last 24 hrs) links from #gen to a links-only channel
-def extract_new_links(text):
-    pieces = text.split(' ')
-    links = list(filter(lambda x: validators.url(x), pieces))
-    without_imgs = list(filter(lambda x: (not is_image(x)) and ('tenor.com' not in x), links))
-    #include credit?
-    new_links = list(filter(lambda x: x not in data.links, without_imgs))
-
-    nowts = datetime.now().timestamp()
-    for l in new_links:
-        data.links[l] = nowts
-
-    return new_links
-
 ##### GENERAL MESSAGE HANDLING #####
 @bot.event
 async def on_message(message):
@@ -107,9 +92,10 @@ async def on_reaction_add(reaction, user):
         else:
             data.add_receipt(reaction.message.id)
         reactors = await reaction.users().flatten()
-        emb = receipt_message(message=reaction.message, text=reaction.message.content, author=reaction.message.author, receipter=reactors[0])
+        text, emb = receipt_message(message=reaction.message, text=reaction.message.content, author=reaction.message.author, receipter=reactors[0])
         r_channel = bot.get_channel(settings.RECEIPTS_CHANNEL_ID)
         await r_channel.send(embed=emb)
+        await r_channel.send(text)
 
 @bot.event
 async def on_reaction_remove(reaction, user):

@@ -4,6 +4,7 @@ import json, os
 
 from data import data
 from settings import *
+import validators
 
 
 def is_image(url):
@@ -16,6 +17,23 @@ def is_image(url):
         if iext in ext:
             return True
     return False
+
+def extract_links(text):
+    pieces = text.split(' ')
+    links = list(filter(lambda x: validators.url(x), pieces))
+    without_imgs = list(filter(lambda x: (not is_image(x)) and ('tenor.com' not in x), links))
+    return without_imgs
+
+def extract_new_links(text):
+    all_links = extract_links(text)
+    #include credit?
+    new_links = list(filter(lambda x: x not in data.links, all_links))
+
+    nowts = datetime.now().timestamp()
+    for l in new_links:
+        data.links[l] = nowts
+
+    return new_links
 
 def generate_timestring(elapsed):
     days, r = divmod(elapsed, 86400)
@@ -53,6 +71,7 @@ def get_message_link(msg):
 
 def receipt_message(message, text, author=None, receipter=None):
     msg_url = get_message_link(message)
+    links = " ".join(extract_links(message.content))
 
     emb = discord.Embed(description=text, color=RECEIPT_COLOR)
 
@@ -71,8 +90,7 @@ def receipt_message(message, text, author=None, receipter=None):
         ft_txt = "🧾ed by {}".format(receipter.display_name)
         emb.set_footer(text=ft_txt, icon_url=receipter.avatar_url)
 
-    return emb
-
+    return links, emb
 
 
 
