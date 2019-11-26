@@ -130,13 +130,13 @@ class Stats(commands.Cog):
 
 		# remove dethroned members
 		for mem in data.guild.members:
-			if mem.display_name[-1:] == self.top_emoji:
+			if self.top_emoji in mem.display_name:
 				pid = str(mem.id)
 				if pid in datalist:
 					maintainers.append(pid)
 				else:
 					dethroned.append(pid)
-					await mem.edit(nick=(mem.display_name[:-1]))
+					await mem.edit(nick=(mem.display_name.replace(self.top_emoji,"")))
 
 		# add the usurpers
 		for pid in datalist:
