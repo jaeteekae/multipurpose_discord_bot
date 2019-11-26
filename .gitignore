@@ -20,3 +20,8 @@ imgs
 imgs/*
 data/*
 
+alembic/versions
+alembic/
+alembic.ini
+
+*.db

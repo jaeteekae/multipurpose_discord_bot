@@ -93,6 +93,3 @@ def receipt_message(message, text, author=None, receipter=None):
     return links, emb
 
 
-
-
-
