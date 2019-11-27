@@ -2,6 +2,13 @@ import settings
 import json, os
 from datetime import datetime
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+engine = create_engine(settings.DATABASE_PATH)
+Session = sessionmaker(bind=engine)
+session = Session()
+
 # Yes I know I should be using a proper database at this point ¯\_(ツ)_/¯
 class DataObj:
 
@@ -45,15 +52,6 @@ class DataObj:
             self.receipts = []
 
         try:
-            with open(settings.BET_FILE,'r') as f:
-                obj = json.load(f)
-                self.bets = obj
-        except:
-            self.bets = {"open_pools": [],
-                         "previous_pools": [],
-                         "members": []}
-
-        try:
             with open(settings.STATS_FILE,'r') as f:
                 obj = json.load(f)
                 self.stats = obj
@@ -81,8 +79,6 @@ class DataObj:
             json.dump(self.stats,f)
         with open(settings.RECEIPT_FILE,'w') as f:
             json.dump(self.receipts,f)
-        with open(settings.BET_FILE,'w') as f:
-            json.dump(self.bets,f)
 
     def remove_old_links(self):
         now = datetime.now()

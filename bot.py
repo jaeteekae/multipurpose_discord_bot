@@ -10,7 +10,7 @@ import pdb
 
 import settings
 from helpers import *
-from data import data
+from data import data, session
 # pdb.set_trace()
 if settings.PRODUCTION:
     logging.basicConfig(filename='data/logfile.txt',
@@ -153,7 +153,7 @@ extensions = ['cogs.gif_dictionary',
               'cogs.convert',
               # 'cogs.osha',
               'cogs.praisebot',
-              # 'cogs.bet',
+              'cogs.bet',
               'cogs.receipt']
 
 if __name__ == '__main__':

@@ -7,6 +7,8 @@ RECEIPTS_CHANNEL_ID = secret.RECEIPTS_CHANNEL_ID
 PREFIX = "!"
 TESTING_PREFIX = "&"
 
+DATABASE_PATH = "sqlite:///gcdb.db"
+
 DATA_FOLDER = "data"
 STATIC_FOLDER = "imgs"
 PRAISE_FOLDER = os.path.join(STATIC_FOLDER,"praise_gifs")
@@ -31,7 +33,6 @@ LINKS_FILE = os.path.join(DATA_FOLDER,"gen_links.json")
 STATS_FILE = os.path.join(DATA_FOLDER,"stats.json")
 STATS_COLOR = 0xede361 # soft yellow
 
-BET_FILE = os.path.join(DATA_FOLDER,"bets.json")
 BET_COLOR = 0xed041f # bright red
 
 CONVERT_COLOR = 0xc84dd1 # dusty pink
