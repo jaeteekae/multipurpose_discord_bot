@@ -11,12 +11,11 @@ class GCMember(Base):
 	discord_id = Column(Integer)
 	nickname = Column(String)
 	real_name = Column(String)
+	crowns = Column(Integer)
 
 	owned_pools = relationship(lambda: BettingPool, foreign_keys=lambda: BettingPool.owner_id, back_populates="owner")
 	won_pools = relationship(lambda: BettingPool, foreign_keys=lambda: BettingPool.winner_id, back_populates="winner")
-
-	# betting_wins = relationship("BettingPool", back_populates="gcmember")
-	# bets_made = relationship("Bet", back_populates="gcmember")
+	bets = relationship(lambda: Bet, foreign_keys=lambda: Bet.better_id, back_populates="better")
 	# birthday = Column(Date)
 	# timezone_id = Column(Integer, ForeignKey(timezone.id))
 
@@ -36,23 +35,23 @@ class BettingPool(Base):
 	winner_id = Column(Integer, ForeignKey("gcmember.id"))
 	winner = relationship("GCMember", back_populates="won_pools", foreign_keys=[winner_id])
 
-	# bets = relationship("Bet", back_populates="bettingpool")
+	bets = relationship(lambda: Bet, foreign_keys=lambda: Bet.pool_id, back_populates="pool")
 
 	def __repr__(self):
 		return self.name
 
-# class Bet(Base):
-# 	__tablename__ = "bets"
+class Bet(Base):
+	__tablename__ = "bets"
 
-# 	id = Column(Integer, primary_key=True)
-# 	text = Column(String)
-# 	crowns = Column(Integer)
+	id = Column(Integer, primary_key=True)
+	text = Column(String)
+	crowns = Column(Integer)
 
-# 	better_id = Column(Integer, ForeignKey("gcmember.id"))
-# 	# better = relationship("GCMember", back_populates="bets")
+	better_id = Column(Integer, ForeignKey("gcmember.id"))
+	better = relationship("GCMember", back_populates="bets", foreign_keys=[better_id])
 
-# 	bettingpool_id = Column(Integer, ForeignKey("bettingpool.id"))
-# 	bettingpool = relationship("BettingPool", back_populates="bets")
+	pool_id = Column(Integer, ForeignKey("bettingpool.id"))
+	pool = relationship("BettingPool", back_populates="bets", foreign_keys=[pool_id])
 
 # class Timezone(Base):
 # 	__tablename__ = "timezone"
