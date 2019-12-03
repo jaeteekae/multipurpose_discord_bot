@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, Date, Interval, ForeignKey
+from sqlalchemy import Column, Table, Integer, String, Boolean, Date, Interval, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -14,7 +14,6 @@ class GCMember(Base):
 	crowns = Column(Integer)
 
 	owned_pools = relationship(lambda: BettingPool, foreign_keys=lambda: BettingPool.owner_id, back_populates="owner")
-	won_pools = relationship(lambda: BettingPool, foreign_keys=lambda: BettingPool.winner_id, back_populates="winner")
 	bets = relationship(lambda: Bet, foreign_keys=lambda: Bet.better_id, back_populates="better")
 	# birthday = Column(Date)
 	# timezone_id = Column(Integer, ForeignKey(timezone.id))
@@ -32,9 +31,6 @@ class BettingPool(Base):
 	owner_id = Column(Integer, ForeignKey("gcmember.id"))
 	owner = relationship("GCMember", back_populates="owned_pools", foreign_keys=[owner_id])
 
-	winner_id = Column(Integer, ForeignKey("gcmember.id"))
-	winner = relationship("GCMember", back_populates="won_pools", foreign_keys=[winner_id])
-
 	bets = relationship(lambda: Bet, foreign_keys=lambda: Bet.pool_id, back_populates="pool")
 
 	def __repr__(self):
@@ -46,6 +42,7 @@ class Bet(Base):
 	id = Column(Integer, primary_key=True)
 	text = Column(String)
 	crowns = Column(Integer)
+	winning_bet = Column(Boolean)
 
 	better_id = Column(Integer, ForeignKey("gcmember.id"))
 	better = relationship("GCMember", back_populates="bets", foreign_keys=[better_id])

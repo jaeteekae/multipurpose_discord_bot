@@ -95,7 +95,8 @@ async def on_reaction_add(reaction, user):
         text, emb = receipt_message(message=reaction.message, text=reaction.message.content, author=reaction.message.author, receipter=reactors[0])
         r_channel = bot.get_channel(settings.RECEIPTS_CHANNEL_ID)
         await r_channel.send(embed=emb)
-        await r_channel.send(text)
+        if text:
+            await r_channel.send(text)
 
 @bot.event
 async def on_reaction_remove(reaction, user):

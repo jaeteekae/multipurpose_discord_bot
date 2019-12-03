@@ -94,6 +94,7 @@ class Bet(commands.Cog):
 		new_bet = models.Bet()
 		new_bet.text = bet_text
 		new_bet.crowns = crowns
+		new_bet.winning_bet = False
 		new_bet.better_id = author.id
 		new_bet.pool_id = pool_id
 		session.add(new_bet)
@@ -105,7 +106,7 @@ class Bet(commands.Cog):
 		# send success message
 		emb.set_author(name="Success: Bet Placed")
 		emb.set_footer(text="Bet ID #{}".format(new_bet.id))
-		emb.description = "**{}**\n\nBet **{}** crowns that \"{}\"\n\nIn the pool **{}** (#{})".format(ctx.author.display_name, crowns, bet_text, pool.name, pool.id)
+		emb.description = "**{}**\n\n**Amount:** {} crowns\n**Bet:** {}\n**Pool:** {} (#{})".format(ctx.author.display_name, crowns, bet_text, pool.name, pool.id)
 		await ctx.send(embed=emb)
 
 	@commands.command(help="End a pool and choose the winner(s)\nExample:```!choose-winners #4 @Dani @Jules```", 
@@ -194,6 +195,7 @@ class Bet(commands.Cog):
 				winstr = "**{}** won **{}** crowns for her bet that \"{}\"".format(w.real_name, winnings, winning_bets[i].text)
 				win_strings.append(winstr)
 				w.crowns += winnings
+				winning_bets[i].winning_bet = True
 
 			pool.finalized = True
 			session.commit()
@@ -202,8 +204,6 @@ class Bet(commands.Cog):
 			emb.set_footer(text="This pool had the id #{}, was owned by {}, and was created on {}".format(pool.id, pool.owner.real_name, pool.created_at))
 			emb.description = "\n".join(win_strings)
 			await ctx.send(embed=emb)
-
-
 
 	@commands.command(help="See the current bets in a pool", 
 					  usage="[optional #id]",
@@ -219,6 +219,13 @@ class Bet(commands.Cog):
 
 		for pool in open_pools:
 			await ctx.send(embed=self.pool_emb(pool))
+
+	@commands.command(help="See the best betters in the biz", 
+					  aliases=["leaderboards"])
+	async def leaderboard(self, ctx, *args):
+		emb = discord.Embed(color=EMBCOLOR)
+		emb.set_author(name="Leaderboard")
+		pass
 
 	@commands.command(help="Erase a pool from existence and return all crowns bet", 
 					  usage="<pool id#>",

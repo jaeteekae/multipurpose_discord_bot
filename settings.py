@@ -39,6 +39,6 @@ CONVERT_COLOR = 0xc84dd1 # dusty pink
 
 OSHA_COLOR = 0xed041f # bright red
 
-TESTING = False
+TESTING = True
 PRODUCTION = not TESTING
 
