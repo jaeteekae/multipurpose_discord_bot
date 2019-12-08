@@ -95,6 +95,7 @@ class Bet(commands.Cog):
 		new_bet.text = bet_text
 		new_bet.crowns = crowns
 		new_bet.winning_bet = False
+		new_bet.winnings = 0
 		new_bet.better_id = author.id
 		new_bet.pool_id = pool_id
 		session.add(new_bet)
@@ -141,8 +142,8 @@ class Bet(commands.Cog):
 			await ctx.send(embed=emb)
 			return
 
-		# choose-winners called by not the owner
-		if pool.owner != author:
+		# choose-winners called by not the owner (or by me)
+		if pool.owner != author and author.id != 19:
 			emb.description = "You aren't authorized to choose the winners of this pool 😒 Only {} can choose the winners here.".format(pool.owner.real_name)
 			await ctx.send(embed=emb)
 			return
@@ -157,7 +158,7 @@ class Bet(commands.Cog):
 		winners = []
 		winner_rns = []
 		winning_bets = []
-		# mentions != betters
+		# if mentions != betters
 		for m in ctx.message.mentions:
 			mobj = session.query(models.GCMember).filter_by(discord_id=m.id).first()
 			b = bets.filter_by(better=mobj).first()
@@ -174,7 +175,7 @@ class Bet(commands.Cog):
 		await ctx.send(msg, embed=emb)
 
 		def check(reaction, user):
-			return user.id == pool.owner.discord_id
+			return (user.id == pool.owner.discord_id) or (user.id == 246457096718123019)
 
 		try:
 			reaction, user = await self.bot.wait_for('reaction_add', timeout=30.0, check=check)
@@ -190,12 +191,19 @@ class Bet(commands.Cog):
 			for b in winning_bets:
 				winners_bets_sum += b.crowns
 
+			# hand out the winnings
 			for i, w in enumerate(winners):
 				winnings = round(winning_bets[i].crowns/winners_bets_sum*total_crowns)
 				winstr = "**{}** won **{}** crowns for her bet that \"{}\"".format(w.real_name, winnings, winning_bets[i].text)
 				win_strings.append(winstr)
 				w.crowns += winnings
 				winning_bets[i].winning_bet = True
+				winning_bets[i].winnings = winnings
+
+			# track the losing bets
+			losers = bets.filter_by(winning_bet=False).all()
+			for l in losers:
+				l.winnings = 0-l.crowns
 
 			pool.finalized = True
 			session.commit()

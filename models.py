@@ -49,6 +49,8 @@ class Bet(Base):
 
 	pool_id = Column(Integer, ForeignKey("bettingpool.id"))
 	pool = relationship("BettingPool", back_populates="bets", foreign_keys=[pool_id])
+	
+	winnings = Column(Integer)
 
 # class Timezone(Base):
 # 	__tablename__ = "timezone"
