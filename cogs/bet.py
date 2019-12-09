@@ -59,17 +59,19 @@ class Bet(commands.Cog):
 			await ctx.send(embed=emb)
 			return
 
+		# check that they bet crowns
+		if args[2].lower()!="crown" and args[2].lower()!="crowns":
+			emb.description = "...did you bet any crowns?"
+			await ctx.send(embed=emb)
+			return
+
 		numbre = re.compile('\d+')
 		pool_id = int(numbre.search(args[0]).group())
 		crowns = int(numbre.search(args[1]).group())
 
 		author = session.query(models.GCMember).filter_by(discord_id=ctx.author.id).first()
 		pool = session.query(models.BettingPool).filter_by(id=pool_id).first()
-
-		if args[2].lower()=="crown" or args[2].lower()=="crowns":
-			bet_text = " ".join(args[3:])
-		else:
-			bet_text = " ".join(args[2:])
+		bet_text = " ".join(args[3:])
 
 		# betting more than they have
 		if author.crowns < crowns:
