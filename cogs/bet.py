@@ -48,13 +48,14 @@ class Bet(commands.Cog):
 		emb = discord.Embed(color=EMBCOLOR)
 		emb.set_author(name="Bet Failed: {}".format(ctx.author.display_name))
 
-		open_pools = session.query(models.BettingPool).filter_by(finalized=False).all()		
-		if len(open_pools) == 0:
-			emb.description = "There aren't any open pools to bet on 😔\nUse: ```!open-pool <put-name-here>``` to start a betting pool."
-			await ctx.send(embed=emb)
-			return
 		if len(args) < 4:
 			emb.description = "You seem to be missing something there 🤔\n\n**Usage:**\n```!bet #<id number> <#> crowns <bet content>```\n\n**Example**:```!bet #4 10 crowns LNX will create the next MIR remix```"
+			await ctx.send(embed=emb)
+			return
+
+		error, errmsg = self.error_check(raw_pool_id=args[0])
+		if error:
+			emb.description = errmsg
 			await ctx.send(embed=emb)
 			return
 
@@ -69,13 +70,6 @@ class Bet(commands.Cog):
 			bet_text = " ".join(args[3:])
 		else:
 			bet_text = " ".join(args[2:])
-
-		# trying to bet in a nonexistent pool
-		if not pool:
-			pool_titles = "\n".join(list(map(self.pool_title_msg, open_pools)))
-			emb.description = "There is no open pool #{} 🤷‍♀️\n\n**__Open Pools:__**\n{}".format(pool_id, pool_titles)
-			await ctx.send(embed=emb)
-			return
 
 		# betting more than they have
 		if author.crowns < crowns:
@@ -124,48 +118,28 @@ class Bet(commands.Cog):
 			await ctx.send(embed=emb)
 			return
 
-		# pool id NAN
-		try:
-			numbre = re.compile('\d+')
-			pool_id = int(numbre.search(args[0]).group())
-		except:
-			emb.description = "That doesn't seem like a valid pool ID # to me\n\n**Usage:**\n```!choose-winners #<pool id> @winner1 @winner2```\n\n**Example**:```!choose-winners #4 @Dani @Jules```"
+		# general error checks
+		error, errmsg = self.error_check(raw_pool_id=args[0], author_id=ctx.author.id, mentions=ctx.message.mentions)
+		if error:
+			emb.description = errmsg
 			await ctx.send(embed=emb)
 			return
+
+		numbre = re.compile('\d+')
+		pool_id = int(numbre.search(args[0]).group())
 
 		author = session.query(models.GCMember).filter_by(discord_id=ctx.author.id).first()
 		pool = session.query(models.BettingPool).filter_by(id=pool_id, finalized=False).first()
-
-		# pool doesn't exist
-		if not pool:
-			emb.description = "There are no open pools with that ID #. Try:```!pool-status```to see ongoing betting pools."
-			await ctx.send(embed=emb)
-			return
-
-		# choose-winners called by not the owner (or by me)
-		if pool.owner != author and author.id != 19:
-			emb.description = "You aren't authorized to choose the winners of this pool 😒 Only {} can choose the winners here.".format(pool.owner.real_name)
-			await ctx.send(embed=emb)
-			return
-
-		# if they didn't use any mentions
-		if len(ctx.message.mentions) == 0:
-			emb.description = "You have to list the winners using @<name> mentions"
-			await ctx.send(embed=emb)
-			return
 
 		bets = session.query(models.Bet).filter_by(pool=pool)
 		winners = []
 		winner_rns = []
 		winning_bets = []
-		# if mentions != betters
+
+		# collect winners/winning bets
 		for m in ctx.message.mentions:
 			mobj = session.query(models.GCMember).filter_by(discord_id=m.id).first()
 			b = bets.filter_by(better=mobj).first()
-			if not b:
-				emb.description = "Looks like **{}** didn't bet in the pool **{}**. Use:```!pool-status #<id>```to see who did place bets.".format(mobj.real_name, pool.name)
-				await ctx.send(embed=emb)
-				return
 			winners.append(mobj)
 			winner_rns.append(mobj.real_name)
 			winning_bets.append(b)
@@ -208,10 +182,71 @@ class Bet(commands.Cog):
 			pool.finalized = True
 			session.commit()
 
-			emb.set_author(name="Closed: {}".format(pool.name))
+			emb.set_author(name="Finalized: {}".format(pool.name))
 			emb.set_footer(text="This pool had the id #{}, was owned by {}, and was created on {}".format(pool.id, pool.owner.real_name, pool.created_at))
 			emb.description = "\n".join(win_strings)
 			await ctx.send(embed=emb)
+
+	@commands.command(help="Delete a bet (only allowed by the owner of the pool)", 
+					  usage="#<pool id> @<person1> @[person2]...",
+					  name="delete-bet",
+					  aliases=["bet-delete", "bets-delete", "delete-bets"])
+	async def delete_bet(self, ctx, *args):
+		emb = discord.Embed(color=EMBCOLOR)
+		emb.set_author(name="Delete Bet Failed: {}".format(ctx.author.display_name))
+
+		# not enough arguments
+		if len(args) < 2:
+			emb.description = "You seem to be missing something there 🤔\n\n**Usage:**\n```!delete-bet #<pool id> @<person1> @[person2]...```\n\n**Example**:```!delete-bet #4 @Dani```"
+			await ctx.send(embed=emb)
+			return
+
+		# general error checks
+		error, errmsg = self.error_check(raw_pool_id=args[0], author_id=ctx.author.id, mentions=ctx.message.mentions)
+		if error:
+			emb.description = errmsg
+			await ctx.send(embed=emb)
+			return
+
+		numbre = re.compile('\d+')
+		pool_id = int(numbre.search(args[0]).group())
+		pool = session.query(models.BettingPool).filter_by(id=pool_id).first()
+		bets = session.query(models.Bet).filter_by(pool=pool)
+
+		b_to_delete = []
+		rns_to_delete = []
+		mobjs = []
+		for m in ctx.message.mentions:
+			mobj = session.query(models.GCMember).filter_by(discord_id=m.id).first()
+			b = bets.filter_by(better=mobj).first()
+			rns_to_delete.append(mobj.real_name)
+			b_to_delete.append(b)
+			mobjs.append(mobj)
+
+		emb = self.pool_emb(pool)
+		msg = "React to this post if you are **{}** and you want to delete the bets of {} from this pool & return all crowns back to their owners".format(pool.owner.real_name, ", ".join(rns_to_delete))
+		await ctx.send(msg, embed=emb)
+
+		def check(reaction, user):
+			return (user.id == pool.owner.discord_id) or (user.id == 246457096718123019)
+
+		try:
+			reaction, user = await self.bot.wait_for('reaction_add', timeout=30.0, check=check)
+		except asyncio.TimeoutError:
+			await ctx.send("...nvm then")
+		else:
+			# Delete the bets
+			btext = "\n".join(list(map(self.bet_msg_by_person, b_to_delete)))
+			emb.set_author(name="Delete Bet Success: {}".format(ctx.author.display_name))
+			emb.description = "**__Deleted Bets:__**\n" + btext
+
+			for (i,b) in enumerate(b_to_delete):
+				mobjs[i].crowns += b.crowns
+				session.delete(b)
+			session.commit()
+
+			await ctx.send(embed=emb)
+			await ctx.send("**Updated Pool:**",embed=self.pool_emb(pool))
 
 	@commands.command(help="See the current bets in a pool", 
 					  usage="[optional #id]",
@@ -350,6 +385,55 @@ class Bet(commands.Cog):
 		desc = placing + closing + helpmsg
 		emb = discord.Embed(description=desc,color=EMBCOLOR)
 		return emb
+
+	def error_check(self, raw_pool_id=None, author_id=None, mentions=None):
+		# Pool Checks
+		if raw_pool_id:
+			# NaN pool_id
+			try:
+				numbre = re.compile('\d+')
+				pool_id = int(numbre.search(raw_pool_id).group())
+			except:
+				desc = "**\"{}\"** doesn't seem like a valid pool ID # to me".format(raw_pool_id)
+				return (True, desc)
+
+			pool = session.query(models.BettingPool).filter_by(id=pool_id).first()
+			open_pools = session.query(models.BettingPool).filter_by(finalized=False).all()	
+
+			# no pool with the id number pool_id	
+			if not pool:
+				pool_titles = "\n".join(list(map(self.pool_title_msg, open_pools)))
+				desc = "There is no open pool #{} 🤷‍♀️\n\n**__Open Pools:__**\n{}".format(pool_id, pool_titles)
+				return (True, desc)
+
+		# Author Checks
+		if author_id and pool:
+			author = session.query(models.GCMember).filter_by(discord_id=author_id).first()
+
+			# owner-restricted command called by not the owner (or by me)
+			if pool.owner != author and author.id != 19:
+				desc = "You aren't authorized to use this command 😒 Only {} has that power here.".format(pool.owner.real_name)
+				return (True, desc)
+
+		# Mention Checks
+		if mentions != None:
+			# if they didn't use any mentions
+			if len(mentions) == 0:
+				desc = "You have to people using @<name> mentions"
+				return (True, desc)
+
+			if pool:
+				# check if all the mentions have bet in this pool
+				bets = session.query(models.Bet).filter_by(pool=pool)
+				for m in mentions:
+					mobj = session.query(models.GCMember).filter_by(discord_id=m.id).first()
+					b = bets.filter_by(better=mobj).first()
+					if not b:
+						desc = "Looks like **{}** didn't bet in the pool **{}**. Use:```!pool-status #<id>```to see who did place bets.".format(mobj.real_name, pool.name)
+						return (True, desc)
+
+		# Passed all checks
+		return (False, "")
 
 
 def setup(bot):
