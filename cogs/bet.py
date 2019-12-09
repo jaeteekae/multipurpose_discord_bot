@@ -260,6 +260,8 @@ class Bet(commands.Cog):
 			pool_id = int(numbre.search(args[0]).group())
 			open_pools = session.query(models.BettingPool).filter_by(id=pool_id).all()
 
+		if len(open_pools) > 1:
+			await ctx.send("There are currently **{}** open pools:".format(len(open_pools)))
 		for pool in open_pools:
 			await ctx.send(embed=self.pool_emb(pool))
 
@@ -342,7 +344,7 @@ class Bet(commands.Cog):
 					  name="my-bets")
 	async def my_bets(self, ctx, *args):
 		author = session.query(models.GCMember).filter_by(discord_id=ctx.author.id).first()
-		all_bets = session.query(models.Bet).filter_by(better_id=author.id).all()
+		all_bets = session.query(models.Bet).filter_by(better_id=author.id, winnings=0).all()
 		bet_text = "\n".join(list(map(self.bet_msg_by_pool, all_bets)))
 		
 		total_crowns = 0
