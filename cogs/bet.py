@@ -248,6 +248,50 @@ class Bet(commands.Cog):
 			await ctx.send(embed=emb)
 			await ctx.send("**Updated Pool:**",embed=self.pool_emb(pool))
 
+	@commands.command(help="Increase your bet amount", 
+					  usage="#<pool_id> <#> crowns",
+					  name="increase-bet",
+					  aliases=["bet-increase"])
+	async def increase_bet(self, ctx, *args):
+		emb = discord.Embed(color=EMBCOLOR)
+		emb.set_author(name="Increase Bet Failed: {}".format(ctx.author.display_name))
+
+		# not enough arguments
+		if len(args) < 3:
+			emb.description = "You seem to be missing something there 🤔\n\n**Usage:**\n```!increase-bet #<pool id> <#> crowns```\n\n**Example**:```!increase-bet #7 10 crowns```"
+			await ctx.send(embed=emb)
+			return
+
+		# general error checks
+		error, errmsg = self.error_check(raw_pool_id=args[0])
+		if error:
+			emb.description = errmsg
+			await ctx.send(embed=emb)
+			return
+
+		numbre = re.compile('\d+')
+		pool_id = int(numbre.search(args[0]).group())
+		crowns = int(numbre.search(args[1]).group())
+		pool = session.query(models.BettingPool).filter_by(id=pool_id, finalized=False).first()
+		author = session.query(models.GCMember).filter_by(discord_id=ctx.author.id).first()
+
+		my_bet = session.query(models.Bet).filter_by(pool_id=pool_id,better=author).first()
+		if not my_bet:
+			emb.description = "Looks like you didn't bet in the pool **{}**".format(pool.name)
+			await ctx.send(embed=emb)
+			return
+		if crowns <= my_bet.crowns:
+			emb.description = "You can only increase your bet amount. You already bet **{}** crowns that **{}**".format(my_bet.crowns,my_bet.text)
+			await ctx.send(embed=emb)
+			return
+
+		author.crowns -= crowns - my_bet.crowns
+		my_bet.crowns = crowns
+		session.commit()
+		emb.set_author(name="Increase Bet Success: {}".format(ctx.author.display_name))
+		emb.description = "**__Changed Bet:__**:\n**Amount:** {} crowns\n**Bet:** {}\n**Pool:** {} (#{})".format(my_bet.crowns, my_bet.text, pool.name, pool.id)
+		await ctx.send(embed=emb)
+
 	@commands.command(help="See the current bets in a pool", 
 					  usage="[optional #id]",
 					  name="pool-status",
@@ -399,7 +443,7 @@ class Bet(commands.Cog):
 				desc = "**\"{}\"** doesn't seem like a valid pool ID # to me".format(raw_pool_id)
 				return (True, desc)
 
-			pool = session.query(models.BettingPool).filter_by(id=pool_id).first()
+			pool = session.query(models.BettingPool).filter_by(id=pool_id, finalized=False).first()
 			open_pools = session.query(models.BettingPool).filter_by(finalized=False).all()	
 
 			# no pool with the id number pool_id	
