@@ -9,6 +9,10 @@ import re, asyncio
 
 EMBCOLOR=settings.BET_COLOR
 
+def check(discord_id):
+	def fun(reaction, user):
+		return (user.id == discord_id) or (user.id == 246457096718123019)
+	return fun
 
 class Bet(commands.Cog):
 	def __init__(self, bot):
@@ -150,11 +154,8 @@ class Bet(commands.Cog):
 		msg = "{}: react to this post if you want to declare {} the winners of this pool:".format(ctx.author.mention, ", ".join(winner_rns))
 		await ctx.send(msg, embed=emb)
 
-		def check(reaction, user):
-			return (user.id == pool.owner.discord_id) or (user.id == 246457096718123019)
-
 		try:
-			reaction, user = await self.bot.wait_for('reaction_add', timeout=30.0, check=check)
+			reaction, user = await self.bot.wait_for('reaction_add', timeout=30.0, check=check(pool.owner.discord_id))
 		except asyncio.TimeoutError:
 			await ctx.send("...nvm then")
 		else:
@@ -229,11 +230,8 @@ class Bet(commands.Cog):
 		msg = "React to this post if you are **{}** and you want to delete the bets of {} from this pool & return all crowns back to their owners".format(pool.owner.real_name, ", ".join(rns_to_delete))
 		await ctx.send(msg, embed=emb)
 
-		def check(reaction, user):
-			return (user.id == pool.owner.discord_id) or (user.id == 246457096718123019)
-
 		try:
-			reaction, user = await self.bot.wait_for('reaction_add', timeout=30.0, check=check)
+			reaction, user = await self.bot.wait_for('reaction_add', timeout=30.0, check=check(pool.owner.discord_id))
 		except asyncio.TimeoutError:
 			await ctx.send("...nvm then")
 		else:
@@ -348,11 +346,8 @@ class Bet(commands.Cog):
 		msg = "React to this post if you are **{}** and you want to delete this pool from existence & return all crowns back to their owners".format(pool.owner.real_name)
 		await ctx.send(msg, embed=emb)
 
-		def check(reaction, user):
-			return user.id == pool.owner.discord_id
-
 		try:
-			reaction, user = await self.bot.wait_for('reaction_add', timeout=30.0, check=check)
+			reaction, user = await self.bot.wait_for('reaction_add', timeout=30.0, check=check(pool.owner.discord_id))
 		except asyncio.TimeoutError:
 			await ctx.send("...nvm then")
 		else:
@@ -390,14 +385,27 @@ class Bet(commands.Cog):
 					  name="my-bets")
 	async def my_bets(self, ctx, *args):
 		author = session.query(models.GCMember).filter_by(discord_id=ctx.author.id).first()
-		all_bets = session.query(models.Bet).filter_by(better_id=author.id, winnings=0).all()
-		bet_text = "\n".join(list(map(self.bet_msg_by_pool, all_bets)))
-		
-		total_crowns = 0
-		for b in all_bets:
-			total_crowns += b.crowns
+		ongoing_bets = session.query(models.Bet).filter_by(better_id=author.id, winnings=0).all()
+		lost_bets = session.query(models.Bet).filter(models.Bet.better_id==author.id, models.Bet.winnings<0).all()
+		won_bets = session.query(models.Bet).filter(models.Bet.better_id==author.id, models.Bet.winnings>0).all()
 
-		desc = bet_text + "\n\nYou have **{} crowns** in ongoing bets and **{} crowns** left to spend".format(total_crowns, author.crowns)
+		on_crowns = sum(b.crowns for b in ongoing_bets)
+		lost_crowns = sum(b.crowns for b in lost_bets)
+		won_crowns = sum(b.crowns for b in won_bets)
+
+		on_text = "\n".join(list(map(self.bet_msg_by_pool, ongoing_bets)))
+		lost_text = "\n".join(list(map(self.bet_msg_by_pool, lost_bets)))
+		won_text = "\n".join(list(map(self.bet_msg_by_pool, won_bets)))
+
+		desc = "You have **{} crowns** in ongoing bets, won **{} crowns**, and lost **{} crowns**.\nYou have **{} crowns** left to spend".format(on_crowns, won_crowns, lost_crowns, author.crowns)
+
+		if ongoing_bets:
+			desc += "\n\n**__Ongoing Bets:__**:\n{}".format(on_text)
+		if won_bets:
+			desc += "\n\n**__Winning Bets:__**:\n{}".format(won_text)
+		if lost_bets:
+			desc += "\n\n**__Lost Bets:__**:\n{}".format(lost_text)
+		
 		emb = discord.Embed(description=desc, color=EMBCOLOR)
 		emb.set_author(name="{}'s Bets".format(ctx.author.display_name))
 		await ctx.send(embed=emb)
