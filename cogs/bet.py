@@ -252,9 +252,9 @@ class Bet(commands.Cog):
 
 	@commands.command(help="Increase your bet amount", 
 					  usage="#<pool_id> <#> crowns",
-					  name="increase-bet",
-					  aliases=["bet-increase"])
-	async def increase_bet(self, ctx, *args):
+					  name="increase-bet-to",
+					  aliases=["bet-increase-to"])
+	async def increase_bet_to(self, ctx, *args):
 		emb = discord.Embed(color=EMBCOLOR)
 		emb.set_author(name="Increase Bet Failed: {}".format(ctx.author.display_name))
 
