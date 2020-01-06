@@ -180,7 +180,7 @@ class DataObj:
         return self.filter_bots(s)
 
     def get_month_stats(self):
-        s = self.stats['days']
+        s = self.stats['days'][-30:]
         return self.filter_bots(s)
 
     def get_all_stats(self):

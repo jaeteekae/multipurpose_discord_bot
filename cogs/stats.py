@@ -20,33 +20,21 @@ class MyClass():
 class Stats(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
-		self.timewords = ['24', 'day', 'twenty', 'week', 'month', 'all', 'alltime', 'all-time']
+		self.timewords = ['24', 'day', 'twenty', 'week', 'month', 'all', 'alltime', 'all-time', 'one', '1']
 		self.top_emoji = '👑'
 		self.my_id = '246457096718123019'
 
 	@commands.command(help="Get some stats, you nosy person\nTime can be 24 hours, 1 week, 1 month, or all time\nExamples:\n\t!stats @Jules 24 hours\n\t!more-stats #general 1 week\n\t!most-stats everyone 1 month\n\t!stats channels all time", 
 					  usage="<@person|#channel|people|channels> <time>")
 	async def stats(self, ctx, *args):
+		args = list(args)
 		if len(args) == 0:
 			resp, emb = self.message_handle(ctx, ['everyone', '24', 'hours'], self.person_stats_all, self.channel_stats_all)
+		elif args[0] in self.timewords:
+			args.insert(0, 'everyone')
+			resp, emb = self.message_handle(ctx, args, self.person_stats_all, self.channel_stats_all)
 		else:
-			resp, emb = self.message_handle(ctx, args, self.person_stats, self.channel_stats)
-		await ctx.send(resp,embed=emb)
-
-	@commands.command(name="more-stats",
-					  aliases=['stats-more'],
-					  help="Get MORE stats, you nosier person\nTime can be 24 hours, 1 week, 1 month, or all time\nExamples:\n\t!stats @Jules 24 hours\n\t!more-stats #general 1 week\n\t!most-stats everyone 1 month\n\t!stats channels all time", 
-					  usage="<@person|#channel|people|channels> <time>")
-	async def stats_more(self, ctx, *args):
-		resp, emb = self.message_handle(ctx, args, self.person_stats_top_5, self.channel_stats_top_5)
-		await ctx.send(resp,embed=emb)
-
-	@commands.command(name="most-stats",
-					  aliases=['stats-most'],
-					  help="Get the most stats, you nosiest person\nTime can be 24 hours, 1 week, 1 month, or all time\nExamples:\n\t!stats @Jules 24 hours\n\t!more-stats #general 1 week\n\t!most-stats everyone 1 month\n\t!stats channels all time", 
-					  usage="<@person|#channel|people|channels> <time>")
-	async def stats_most(self, ctx, *args):
-		resp, emb = self.message_handle(ctx, args, self.person_stats_all, self.channel_stats_all)
+			resp, emb = self.message_handle(ctx, args, self.person_stats_all, self.channel_stats_all)
 		await ctx.send(resp,embed=emb)
 
 	@commands.command(name="top-emojis",
@@ -170,7 +158,6 @@ class Stats(commands.Cog):
 		await ctx.send(resp,embed=emb)
 
 	def message_handle(self, ctx, args, pers_func, chan_func):
-		args = list(args)
 		error, resp = self.stats_error(args)
 		if error:
 			return(resp, None)
@@ -190,89 +177,34 @@ class Stats(commands.Cog):
 			resp = "I couldn't figure out which channel or person you were looking for, {} :(".format(ctx.author.mention)
 		return(resp,emb)
 
-	def person_stats(self, person, timedata, timestr):
-		calc = 0
-		pid = str(person.id)
-		for entry in timedata:
-			if pid == '*':
-				for chs in entry.values():
-					for msgnum in chs.values():
-						calc += msgnum
-			elif pid in entry:
-				for ch, msgnum in entry[pid].items():
-					calc += msgnum
-		resp = "{} has sent **{}** messages in the past **{}**".format(person.mention,str(calc),timestr)
-		emb = discord.Embed(description=resp,color=settings.STATS_COLOR)
-		return('', emb)
-
-	def channel_stats(self, channel, timedata, timestr):
-		calc = 0
-		chid = str(channel.id)
-		for entry in timedata:
-			for chs in entry.values():
-				for ch, msgnum in chs.items():
-					if (ch == chid) or (chid == '*'):
-						calc += msgnum
-		resp = "There have been **{}** messages sent in {} in the past **{}**".format(str(calc), channel.mention, timestr)
-		emb = discord.Embed(description=resp,color=settings.STATS_COLOR)
-		return('', emb)
-
-	def person_stats_top_5(self, person, timedata, timestr):
-		desc = ''
-		pid = str(person.id)
-		datalist = self.person_data(timedata, pid)
-
-		for x in range(5):
-			if x >= len(datalist):
-				break
-			ch, num = datalist[x]
-			line = '<#{}>: **{}** messages\n'.format(ch, str(num))
-			desc += line
-
-		resp = "These are **{}**'s top 5 channels in the past **{}**:".format(person.display_name,timestr)
-		emb = discord.Embed(description=desc,color=settings.STATS_COLOR)
-		return(resp, emb)
-
-	def channel_stats_top_5(self, channel, timedata, timestr):
-		desc = ''
-		chid = str(channel.id)
-
-		datalist = self.channel_data(timedata, chid)
-		for x in range(5):
-			if x >= len(datalist):
-				break
-			pid, num = datalist[x]
-			line = '<@{}>: **{}** messages\n'.format(pid, str(num))
-			desc += line
-
-		resp = "These are the top 5 posters to **{}** in the past **{}**:".format(channel.mention,timestr)
-		emb = discord.Embed(description=desc,color=settings.STATS_COLOR)
-		return(resp, emb)
-
 	def person_stats_all(self, person, timedata, timestr):
 		desc = ''
 		pid = str(person.id)
 		datalist = self.person_data(timedata, pid)
+		calc = 0
 
 		for (ch,num) in datalist:
 			line = '<#{}>: **{}** messages\n'.format(ch, str(num))
+			calc += num
 			desc += line
 
-		resp = "This is **{}**'s channel activity in the past **{}**:".format(person.display_name,timestr)
+		resp = "There have been **{}** messages sent by **{}** in the past **{}**:".format(calc,person.display_name,timestr)
 		emb = discord.Embed(description=desc,color=settings.STATS_COLOR)
 		return(resp, emb)
 
 	def channel_stats_all(self, channel, timedata, timestr):
 		desc = ''
 		chid = str(channel.id)
+		calc = 0
 
 		datalist = self.channel_data(timedata, chid)
 
 		for (pid,num) in datalist:
 			line = '<@{}>: **{}** messages\n'.format(pid, str(num))
 			desc += line
+			calc += num
 
-		resp = "These are all the posters to **{}** in the past **{}**:".format(channel.mention,timestr)
+		resp = "There have been **{}** messages sent to **{}** in the past **{}**:".format(calc,channel.mention,timestr)
 		emb = discord.Embed(description=desc,color=settings.STATS_COLOR)
 		return(resp, emb)
 
