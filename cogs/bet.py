@@ -52,6 +52,9 @@ class Bet(commands.Cog):
 		emb = discord.Embed(color=EMBCOLOR)
 		emb.set_author(name="Bet Failed: {}".format(ctx.author.display_name))
 
+		if len(args) == 0:
+			return
+
 		if len(args) < 4:
 			emb.description = "You seem to be missing something there 🤔\n\n**Usage:**\n```!bet #<id number> <#> crowns <bet content>```\n\n**Example**:```!bet #4 10 crowns LNX will create the next MIR remix```"
 			await ctx.send(embed=emb)
@@ -314,6 +317,10 @@ class Bet(commands.Cog):
 	async def leaderboard(self, ctx, *args):
 		emb = discord.Embed(color=EMBCOLOR)
 		emb.set_author(name="Leaderboard")
+
+		people_with_most_crowns = session.query(models.GCMember).order_by(models.GCMember.crowns.desc()).all()[:3]
+		people_with_least_crowns = session.query(models.GCMember).order_by(models.GCMember.crowns).all()[:3]
+
 		pass
 
 	@commands.command(help="Erase a pool from existence and return all crowns bet", 
