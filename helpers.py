@@ -72,6 +72,7 @@ def get_message_link(msg):
 def receipt_message(message, text, author=None, receipter=None):
     msg_url = get_message_link(message)
     links = " ".join(extract_links(message.content))
+    hasVideo = False
 
     emb = discord.Embed(description=text, color=RECEIPT_COLOR)
 
@@ -84,12 +85,20 @@ def receipt_message(message, text, author=None, receipter=None):
 
     if message.attachments:
         url = message.attachments[0].url
-        emb.set_image(url=url)
+        _, ext = os.path.splitext(url)
+        ext = ext.lower()
+        if ext != ".mov":
+            emb.set_image(url=url)
+        else:
+            hasVideo = True
 
     if receipter:
         ft_txt = "🧾ed by {}".format(receipter.display_name)
         emb.set_footer(text=ft_txt, icon_url=receipter.avatar_url)
 
-    return links, emb
+    if hasVideo:
+        return links, emb, url
+    else:
+        return links, emb, None
 
 

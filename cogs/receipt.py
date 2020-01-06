@@ -18,9 +18,11 @@ class Receipt(commands.Cog):
 					  usage="!receipt [optional message] [optional uploaded image]",
 					  aliases=["r", "receipts"])
 	async def receipt(self, ctx, *args):
-		l, emb = helpers.receipt_message(message=ctx.message, text=" ".join(args), receipter=ctx.author)
+		l, emb, vid = helpers.receipt_message(message=ctx.message, text=" ".join(args), receipter=ctx.author)
 		r_channel = ctx.bot.get_channel(settings.RECEIPTS_CHANNEL_ID)
 		await r_channel.send(embed=emb)
+		if vid:
+			await r_channel.send(url)
 
 
 def setup(bot):
