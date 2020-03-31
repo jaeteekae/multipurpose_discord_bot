@@ -87,7 +87,7 @@ def receipt_message(message, text, author=None, receipter=None):
         url = message.attachments[0].url
         _, ext = os.path.splitext(url)
         ext = ext.lower()
-        if ext != ".mov":
+        if ext != ".mov" and ext != ".mp4":
             emb.set_image(url=url)
         else:
             hasVideo = True
