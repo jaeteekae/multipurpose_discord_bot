@@ -445,10 +445,11 @@ class Bet(commands.Cog):
 
 	def help_emb(self):
 		placing = "**Placing Bets:**\nPlace your bets (in increments of WHOLE CROWNS ONLY) with ```!bet #<id> <#> crowns <bet content>```\nExample:```!bet #4 10 crowns LNX will create the next MIR remix```This bets 10 crowns in pool #4\n\n"
+		increasing = "**Increase Your Bet Amount:**\nIncrease your bet amount *to* a new number with ```!increase-bet-to #<id> <#> crowns```\nExample:```!increase-bet-to #5 7 crowns```\n\n"
 		closing = "**Choosing a Winner:**\nONLY the pool owner can choose a winner ```!choose-winners #<id> @winner1 @winner2 ...```\nExample:```!choose-winners #4 @jules @dani```You MUST use proper mentions to choose the winners.\n\n"
 		helpmsg = "**Help Message:**\nSee this again with the command ```!bet-help```"
 
-		desc = placing + closing + helpmsg
+		desc = placing + increasing + closing + helpmsg
 		emb = discord.Embed(description=desc,color=EMBCOLOR)
 		return emb
 
