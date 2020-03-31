@@ -41,7 +41,7 @@ class Bet(commands.Cog):
 		session.commit()
 
 		emb = self.help_emb()
-		emb.set_author(name="Opening: \"{}\"".format(new_pool.name))
+		emb.set_author(name="Opening Pool **#{}**: \"{}\"".format(new_pool.id, new_pool.name))
 		emb.set_footer(text="This pool has the id #{} and is owned by {}".format(new_pool.id, ctx.author.display_name))
 		await ctx.send(embed=emb)
 
