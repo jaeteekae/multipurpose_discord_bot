@@ -54,6 +54,9 @@ class Bet(commands.Cog):
 
 		if len(args) == 0:
 			return
+		elif args[0].lower() == "help":
+			await ctx.send(embed=self.help_emb())
+			return
 
 		if len(args) < 4:
 			emb.description = "You seem to be missing something there 🤔\n\n**Usage:**\n```!bet #<id number> <#> crowns <bet content>```\n\n**Example**:```!bet #4 10 crowns LNX will create the next MIR remix```"
