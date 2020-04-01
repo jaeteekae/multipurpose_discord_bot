@@ -6,7 +6,7 @@ import logging
 import os, time, validators
 from datetime import datetime, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
-import pdb
+import pdb, re
 
 import settings
 from helpers import *
@@ -23,6 +23,7 @@ elif settings.TESTING:
 
 help_cmd = discord.ext.commands.DefaultHelpCommand(no_category="What can Apricot-Flower-Baby do for you")
 bot = commands.Bot(command_prefix=cmdprefix, case_insensitive=True, help_command=help_cmd)
+bot.fish_regex = re.compile(r"\b(f|F)ish")
 
 ############ OUT OF OFFICE ############
 def send_away_msg(mem):
@@ -51,7 +52,7 @@ async def on_message(message):
         message.content = message.content.replace("’","'")
 
     if settings.PRODUCTION:
-        if "fish" in message.content:
+        if bot.fish_regex.search(message.content):
             await message.channel.send("👮‍♀️ You seem to have said **_fish_** when you meant **_swim thing_**.\nPlease don't make this mistake again.")
 
         # check for away mentions
