@@ -50,23 +50,26 @@ async def on_message(message):
     if "’" in message.content:
         message.content = message.content.replace("’","'")
 
-    # check for away mentions
-    for ment in message.mentions and settings.PRODUCTION:
-        if str(ment.id) in data.away:
-            title,desc = send_away_msg(ment)
-            emb = discord.Embed(title=title,description=desc,color=settings.AWAY_COLOR)
-            await message.channel.send(embed=emb)
+    if settings.PRODUCTION:
+        if "fish" in message.content:
+            await message.channel.send("👮‍♀️ You seem to have said **_fish_** when you meant **_swim thing_**.\nPlease don't make this mistake again.")
 
-    # only do these if the message is sent from a server
-    if message.guild:
-        # check for links in general
-        if message.channel.name == 'general':
-            new_links = extract_new_links(message.content)
-            link_channel = bot.get_channel(settings.LC_CHANNEL_ID)
-            for l in new_links:
-                await link_channel.send(l)
-        # track stats
-        if settings.PRODUCTION:
+        # check for away mentions
+        for ment in message.mentions:
+            if str(ment.id) in data.away:
+                title,desc = send_away_msg(ment)
+                emb = discord.Embed(title=title,description=desc,color=settings.AWAY_COLOR)
+                await message.channel.send(embed=emb)
+
+        # only do these if the message is sent from a server
+        if message.guild:
+            # check for links in general
+            if message.channel.name == 'general':
+                new_links = extract_new_links(message.content)
+                link_channel = bot.get_channel(settings.LC_CHANNEL_ID)
+                for l in new_links:
+                    await link_channel.send(l)
+            # track stats
             data.track_message(str(message.channel.id),str(message.author.id))
             data.track_emoji(message.content)
 
