@@ -51,7 +51,7 @@ async def on_message(message):
         message.content = message.content.replace("’","'")
 
     # check for away mentions
-    for ment in message.mentions:
+    for ment in message.mentions and settings.PRODUCTION:
         if str(ment.id) in data.away:
             title,desc = send_away_msg(ment)
             emb = discord.Embed(title=title,description=desc,color=settings.AWAY_COLOR)
