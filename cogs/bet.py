@@ -320,11 +320,70 @@ class Bet(commands.Cog):
 	async def leaderboard(self, ctx, *args):
 		emb = discord.Embed(color=EMBCOLOR)
 		emb.set_author(name="Leaderboard")
+		
+		data = []
+		mems = session.query(models.GCMember).all()
+		for m in mems:
+			quer = session.query(models.Bet).filter(models.Bet.better_id==m.id)
+			if len(quer.all()) == 0:
+				continue
+			lost_bets = quer.filter(models.Bet.winnings<0).all()
+			won_bets = quer.filter(models.Bet.winnings>0).all()
+			data.append({"member": m,
+						 "crowns": m.crowns, 
+						 "won_crowns": sum(b.crowns for b in won_bets), 
+						 "lost_crowns": sum(b.crowns for b in lost_bets), 
+						 "won_bets": len(won_bets), 
+						 "lost_bets": len(lost_bets)})
 
-		people_with_most_crowns = session.query(models.GCMember).order_by(models.GCMember.crowns.desc()).all()[:3]
-		people_with_least_crowns = session.query(models.GCMember).order_by(models.GCMember.crowns).all()[:3]
+		# MOST AND LEAST TOTAL CROWNS
+		data.sort(key=lambda x: x["crowns"])
+		people_with_least_crowns = data[:3]
+		data.reverse()
+		people_with_most_crowns = data[:3]
+		desc = "**__Most total crowns:__**\n"
+		for p in people_with_most_crowns:
+			desc += "**{}:**\t**{}** crowns\n".format(p["member"].real_name, p["crowns"])
+		desc += "\n**__Least total crowns:__**\n"
+		for p in people_with_least_crowns:
+			desc += "**{}:**\t**{}** crowns\n".format(p["member"].real_name, p["crowns"])
 
-		pass
+		# MOST TOTAL CROWNS WON AND LOST
+		data.sort(reverse=True, key=lambda x: x["won_crowns"])
+		most_crowns_won = data[:3]
+		data.sort(reverse=True, key=lambda x: x["lost_crowns"])
+		most_crowns_lost = data[:3]
+		desc += "\n**__Total crowns won in bets:__**\n"
+		for p in most_crowns_won:
+			desc += "**{}:**\t**{}** crowns won\n".format(p["member"].real_name, p["won_crowns"])
+		desc += "\n**__Total crowns lost in bets:__**\n"
+		for p in most_crowns_lost:
+			desc += "**{}:**\t**{}** crowns lost\n".format(p["member"].real_name, p["lost_crowns"])
+
+		# MOST TOTAL BETS WON AND LOST
+		data.sort(reverse=True, key=lambda x: x["won_bets"])
+		most_bets_won = data[:3]
+		data.sort(reverse=True, key=lambda x: x["lost_bets"])
+		most_bets_lost = data[:3]
+		desc += "\n**__Most bets won:__**\n"
+		for p in most_bets_won:
+			desc += "**{}:**\t**{}** bets won\n".format(p["member"].real_name, p["won_bets"])
+		desc += "\n**__Most bets lost:__**\n"
+		for p in most_bets_lost:
+			desc += "**{}:**\t**{}** bets lost\n".format(p["member"].real_name, p["lost_bets"])
+
+		# BIGGEST WINS AND LOSSES
+		biggest_wins = session.query(models.Bet).filter(models.Bet.winnings>0).order_by(models.Bet.winnings.desc()).all()
+		biggest_losses = session.query(models.Bet).filter(models.Bet.winnings<0).order_by(models.Bet.winnings).all()
+		desc += "\n**__Biggest Wins:__**\n"
+		for b in biggest_wins[:3]:
+			desc += "{} in **{}**\n".format(self.winning_bet_msg_by_person(b), b.pool.name)
+		desc += "\n**__Biggest Losses:__**\n"
+		for b in biggest_losses[:3]:
+			desc += "{} in **{}**\n".format(self.bet_msg_by_person(b), b.pool.name)
+
+		emb.description = desc
+		await ctx.send(embed=emb)
 
 	@commands.command(help="Erase a pool from existence and return all crowns bet", 
 					  usage="<pool id#>",
@@ -438,10 +497,13 @@ class Bet(commands.Cog):
 		return "**Pool #{}:** {}".format(pool.id, pool.name)
 
 	def bet_msg_by_person(self, bet):
-		return "**{}**: {} crowns that {}".format(bet.better.real_name, bet.crowns, bet.text)
+		return "**{}**: {} crowns that \"{}\"".format(bet.better.real_name, bet.crowns, bet.text)
+
+	def winning_bet_msg_by_person(self, bet):
+		return "**{}**: Won {} (bet {}) crowns that \"{}\"".format(bet.better.real_name, bet.winnings, bet.crowns, bet.text)
 
 	def bet_msg_by_pool(self, bet):
-		return "**{}**: {} crowns that {}".format(bet.pool.name, bet.crowns, bet.text)
+		return "**{}**: {} crowns that \"{}\"".format(bet.pool.name, bet.crowns, bet.text)
 
 	def help_emb(self):
 		placing = "**Placing Bets:**\nPlace your bets (in increments of WHOLE CROWNS ONLY) with ```!bet #<id> <#> crowns <bet content>```\nExample:```!bet #4 10 crowns LNX will create the next MIR remix```This bets 10 crowns in pool #4\n\n"
