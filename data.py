@@ -139,12 +139,25 @@ class DataObj:
                 this_hour[personid][channelid] += 1
 
     def track_emoji(self, msg):
+        start = msg
         emostats = self.stats['emojis']
+
+        # for static emojis
         while('<:' in msg):
             msg = msg[msg.find('<:')+2:]
             msg = msg[msg.find(':')+1:]
             emojid = msg[:msg.find('>')]
+            if emojid in emostats:
+                emostats[emojid] += 1
+            else:
+                emostats[emojid] = 1
 
+        # for gif emojis
+        msg = start
+        while('<a:' in msg):
+            msg = msg[msg.find('<a:')+3:]
+            msg = msg[msg.find(':')+1:]
+            emojid = msg[:msg.find('>')]
             if emojid in emostats:
                 emostats[emojid] += 1
             else:
