@@ -123,7 +123,17 @@ async def on_message_delete(message):
 @bot.event
 async def on_message_edit(before, after):
     if before.content != after.content:
-        await bot.process_commands(after)   
+        await bot.process_commands(after)  
+
+@bot.event
+async def on_member_update(before, after):
+    bday_role = data.guild.get_role(716014074009485332)
+    if (bday_role in before.roles) and (bday_role not in after.roles):
+        bday_channel = bot.get_channel(settings.BIRTHDAY_CHANNEL_ID)
+        await bday_channel.send("{} is gone... for now 👀".format(after.display_name))
+    if (bday_role not in before.roles) and (bday_role in after.roles):
+        bday_channel = bot.get_channel(settings.BIRTHDAY_CHANNEL_ID)
+        await bday_channel.send("{} HAS ARRIVED 🥳".format(after.display_name))
 
 @bot.event
 async def dm(ctx):
