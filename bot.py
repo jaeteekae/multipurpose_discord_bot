@@ -79,24 +79,27 @@ async def on_message(message):
 
 ######## AUTODELETE FOR #RECEIPTS ########
 @bot.event
-async def on_reaction_add(reaction, user):
-    if type(reaction.emoji) != str:
-        data.track_emoji_react(reaction.emoji)
+async def on_raw_reaction_add(payload):
+    if type(payload.emoji) != str:
+        data.track_emoji_react(payload.emoji)
+        return
 
-    if reaction.message.channel.id == settings.RECEIPTS_CHANNEL_ID:
-        if reaction.emoji == '🗑':
-            await reaction.message.delete()
+    chan = bot.get_channel(payload.channel_id)
+    msg = chan.fetch_message(payload.message_id)
 
-    if reaction.emoji == '📌':
-        await reaction.message.pin()
+    if payload.channel_id == settings.RECEIPTS_CHANNEL_ID:
+        if payload.emoji == '🗑':
+            await msg.delete()
 
-    if reaction.emoji == '🧾' or reaction.emoji == '📸':
-        if data.already_receipted(reaction.message.id):
+    if payload.emoji == '📌':
+        await msg.pin()
+
+    elif payload.emoji == '🧾' or payload.emoji == '📸':
+        if data.already_receipted(payload.message_id):
             return
         else:
-            data.add_receipt(reaction.message.id)
-        reactors = await reaction.users().flatten()
-        text, emb, vid = receipt_message(message=reaction.message, text=reaction.message.content, author=reaction.message.author, receipter=reactors[0])
+            data.add_receipt(payload.message_id)
+        text, emb, vid = receipt_message(message=msg, text=msg.content, author=msg.author, receipter=payload.member)
         r_channel = bot.get_channel(settings.RECEIPTS_CHANNEL_ID)
         await r_channel.send(embed=emb)
         if text:
@@ -105,17 +108,21 @@ async def on_reaction_add(reaction, user):
             await r_channel.send(vid)
 
 @bot.event
-async def on_reaction_remove(reaction, user):
-    if reaction.emoji == '📌':
+async def on_raw_reaction_remove(payload):
+    if payload.emoji == '📌':
+        chan = bot.get_channel(payload.channel_id)
+        msg = chan.fetch_message(payload.message_id)
         # don't unpin if there are still pin reacts on the msg
-        for r in reaction.message.reactions:
+        for r in msg.reactions:
             if r.emoji == '📌':
                 return
-        await reaction.message.unpin()
+        await msg.unpin()
 
 @bot.event
-async def on_message_delete(message):
-    if message.channel.id == settings.RECEIPTS_CHANNEL_ID:
+async def on_raw_message_delete(payload):
+    if payload.channel_id == settings.RECEIPTS_CHANNEL_ID:
+        chan = bot.get_channel(payload.channel_id)
+        message = chan.fetch_message(payload.message_id)
         url = message.embeds[0].author.url
         msg_id = url[url.rfind('/')+1:]
         data.remove_receipt(int(msg_id))
