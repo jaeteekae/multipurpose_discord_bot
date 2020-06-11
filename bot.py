@@ -80,7 +80,7 @@ async def on_message(message):
 ######## AUTODELETE FOR #RECEIPTS ########
 @bot.event
 async def on_raw_reaction_add(payload):
-    if type(payload.emoji) != str:
+    if payload.emoji.is_custom_emoji():
         data.track_emoji_react(payload.emoji)
         return
 
@@ -94,7 +94,7 @@ async def on_raw_reaction_add(payload):
     if str(payload.emoji) == '📌':
         await msg.pin()
 
-    elif str(payload.emoji) == '🧾' or str(payload.emoji) == '📸':
+    elif (str(payload.emoji) == '🧾') or (str(payload.emoji) == '📸'):
         if data.already_receipted(payload.message_id):
             return
         else:
