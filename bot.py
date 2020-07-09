@@ -23,7 +23,9 @@ elif settings.TESTING:
 
 help_cmd = discord.ext.commands.DefaultHelpCommand(no_category="What can Apricot-Flower-Baby do for you")
 bot = commands.Bot(command_prefix=cmdprefix, case_insensitive=True, help_command=help_cmd)
-bot.fish_regex = re.compile(r"\b(f|F)ish")
+bot.shh = False
+bot.fish_regex = re.compile(r"\bfish")
+bot.kst_regex = re.compile(r"kst\b")
 
 ############ OUT OF OFFICE ############
 def send_away_msg(mem):
@@ -52,8 +54,20 @@ async def on_message(message):
         message.content = message.content.replace("’","'")
 
     if settings.PRODUCTION:
-        if bot.fish_regex.search(message.content):
-            await message.channel.send("👮‍♀️ You seem to have said **_fish_** when you meant **_swim thing_**.\nPlease don't make this mistake again.")
+        lowered = message.content.lower()
+
+        # if bot.shh:
+        #     shher = bot.get_cog('Shh')
+        #     if (await shher.unnacceptable_msg(message)):
+        #         await message.delete()
+
+        # if bot.fish_regex.search(lowered):
+        #     await message.channel.send("👮‍♀️ You seem to have said **_fish_** when you meant **_swim thing_**.\nPlease don't make this mistake again.")
+
+        if bot.kst_regex.search(lowered):
+            msg = kst_converter(lowered)
+            if msg:
+                await message.channel.send(msg)
 
         # check for away mentions
         for ment in message.mentions:

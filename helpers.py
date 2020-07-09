@@ -1,10 +1,11 @@
-from datetime import datetime
+from datetime import datetime, timedelta, timezone, date, time
 import discord
-import json, os
+import json, os, re
 
 from data import data
 from settings import *
 import validators
+# import filetype
 
 
 def is_image(url):
@@ -100,5 +101,75 @@ def receipt_message(message, text, author=None, receipter=None):
         return links, emb, url
     else:
         return links, emb, None
+
+def backspace(msg, start):
+    while (msg[start] == ' '):
+        start -= 1
+    return start
+
+# params are in KST
+def time_from_now(hrs, min):
+    tomorrow = date.today() + timedelta(days=1)
+    timeobj = time(hour=hrs,minute=min,tzinfo=timezone.utc)
+    time_to_find = datetime.combine(tomorrow,timeobj)
+    now_in_kst = datetime.now(timezone.utc) + timedelta(hours=9)
+    diff = time_to_find - now_in_kst
+    while diff.days > 0:
+        diff -= timedelta(days=1)
+
+    result_hours = diff.seconds//3600
+    diff -= timedelta(hours=result_hours)
+    return str(result_hours) + " hours and " + str(diff.seconds//60) + " minutes"
+
+# msg is the (all lowercase) string of message.content
+def kst_converter(msg):
+    kst_regex = re.compile(r"kst\b")
+    noon_regex = re.compile(r"noon\b")
+    midnight_regex = re.compile(r"midnight\b")
+    match = kst_regex.search(msg)
+    ret_string = ""
+    add = 0
+
+    while match:
+        #compute
+        start = match.start()
+
+        if msg[match.start()-5:match.start()-1] == "noon":
+            time = time_from_now(12,0)
+            ret_string += "**" + msg[match.start()-5:match.end()] + "** is in **" + time + "**\n"
+        elif msg[match.start()-9:match.start()-1] == "midnight":
+            time = time_from_now(0,0)
+            ret_string += "**" + msg[match.start()-9:match.end()] + "** is in **" + time + "**\n"
+        elif (start == 0) or (msg[start-1] not in ['m',' ','1','2','3','4','5','6','7','8','9','0']):
+            pass
+        else:
+            start = backspace(msg, start-1)
+            if (msg[start] == 'm'):
+                if (msg[start-1] == 'p'):
+                    add = 12
+                start -=2
+            start = backspace(msg, start)
+            if msg[start].isdecimal():
+                enddec = start + 1
+                while msg[start].isdecimal() or msg[start] == ":":
+                    start -= 1
+                start += 1
+                timestr = msg[start:enddec]
+                timestr = timestr.replace(":","")
+                if (len(timestr) == 2) or (len(timestr) == 1):
+                    time = time_from_now(int(timestr)+add,0)
+                elif len(timestr) == 3:
+                    time = time_from_now(int(timestr[:1])+add,int(timestr[1:]))                    
+                elif len(timestr) == 4:
+                    time = time_from_now(int(timestr[:2])+add,int(timestr[2:]))
+                else:
+                    return ""
+                ret_string += "**" + msg[start:match.end()] + "** is in **" + time + "**\n"
+
+        # look for more KST mentions
+        msg = msg[match.end():]
+        match = kst_regex.search(msg)
+    
+    return ret_string
 
 
