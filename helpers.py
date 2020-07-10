@@ -13,7 +13,7 @@ def is_image(url):
     if not ext:
         return False
     ext = ext.lower()
-    img_exts = ['jpeg','exif','gif','bmp','png','webp','hdr','img','jpg','ico','tif']
+    img_exts = ['jpeg','jpg','exif','gif','bmp','png','webp','hdr','img','ico','tif','tiff']
     for iext in img_exts:
         if iext in ext:
             return True
@@ -71,9 +71,10 @@ def get_message_link(msg):
     return "http://discordapp.com/channels/" + str(msg.guild.id) + "/" + str(msg.channel.id) + "/" + str(msg.id)
 
 def receipt_message(message, text, author=None, receipter=None):
+    img_exts = ['.jpeg','.jpg','.exif','.gif','.bmp','.png','.webp','.hdr','.img','.ico','.tif','.tiff']
     msg_url = get_message_link(message)
     links = " ".join(extract_links(message.content))
-    hasVideo = False
+    hasImg = False
 
     emb = discord.Embed(description=text, color=RECEIPT_COLOR)
 
@@ -88,16 +89,15 @@ def receipt_message(message, text, author=None, receipter=None):
         url = message.attachments[0].url
         _, ext = os.path.splitext(url)
         ext = ext.lower()
-        if ext != ".mov" and ext != ".mp4":
+        if ext in img_exts:
             emb.set_image(url=url)
-        else:
-            hasVideo = True
+            hasImg = True
 
     if receipter:
         ft_txt = "🧾ed by {}".format(receipter.display_name)
         emb.set_footer(text=ft_txt, icon_url=receipter.avatar_url)
 
-    if hasVideo:
+    if not hasImg:
         return links, emb, url
     else:
         return links, emb, None
