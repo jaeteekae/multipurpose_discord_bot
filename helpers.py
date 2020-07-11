@@ -1,3 +1,4 @@
+import time as tm
 from datetime import datetime, timedelta, timezone, date, time
 import discord
 import json, os, re
@@ -171,5 +172,55 @@ def kst_converter(msg):
         match = kst_regex.search(msg)
     
     return ret_string
+
+
+async def reroute_bot_msg(msg):
+    tries = 0
+
+    # try 3 times to get embed
+    while len(msg.embeds) == 0:
+        if tries >= 3:
+            return MODS_CHANNEL_ID, "failed: " + msg.content
+        tm.sleep(1)
+        msg = await msg.channel.fetch_message(msg.id)
+        tries += 1
+
+    # check for haru weverse translation
+    emb = msg.embeds[0]
+    if emb.author and emb.author.name and ("haru" in emb.author.name):
+        possible_date = emb.description[:6]
+        if possible_date.isdecimal():
+            return OFFICIALBTS_CHANNEL_ID, "to official_bts: " + msg.content
+    
+    # check for Big Hit Labels youtube upload
+    if emb.author and emb.author.name and ("Big Hit Labels" in emb.author.name):
+        if "gfriend" in emb.title.lower():
+            return GG_CHANNEL_ID, msg.content
+        elif "seventeen" in emb.title.lower():
+            return SVT_CHANNEL_ID, msg.content
+        elif "txt" in emb.title.lower():
+            return TXT_CHANNEL_ID, msg.content
+        elif "i-land" in emb.title.lower():
+            return ILAND_CHANNEL_ID, msg.content
+        elif "bts" in emb.title.lower():
+            return OFFICIALBTS_CHANNEL_ID, "New **BTS** video from **Big Hit Labels** <@&586395910917980161>: " + msg.content
+        else:
+            # if unknown, just post to #officialbts
+            return OFFICIALBTS_CHANNEL_ID, msg.content
+
+    # print("Embed Title: ", emb.title)
+    # print("Embed description: ", emb.description)
+    # print("Embed url: ", emb.url)
+    # print("Embed footer: ", emb.footer)
+    # print("Embed author: ", emb.author)
+    # print("Embed author name: ", emb.author.name)
+    # print("\n\n")
+    return None, None
+
+
+
+
+
+
 
 

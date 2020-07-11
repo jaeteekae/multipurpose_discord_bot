@@ -61,9 +61,17 @@ async def on_message(message):
         #     if (await shher.unnacceptable_msg(message)):
         #         await message.delete()
 
-        # if bot.fish_regex.search(lowered):
-        #     await message.channel.send("👮‍♀️ You seem to have said **_fish_** when you meant **_swim thing_**.\nPlease don't make this mistake again.")
+        if bot.fish_regex.search(lowered):
+            await message.channel.send("👮‍♀️ You seem to have said **_fish_** when you meant **_swim thing_**.\nPlease don't make this mistake again.")
 
+        # reroute notifs
+        if settings.LC_CHANNEL_ID == message.channel.id:
+            chn_id, msg = await reroute_bot_msg(message)
+            if msg:
+                chn = bot.get_channel(int(chn_id))
+                await chn.send(msg)
+
+        # kst bot
         if bot.kst_regex.search(lowered):
             msg = kst_converter(lowered)
             if msg:
