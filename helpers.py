@@ -76,6 +76,7 @@ def receipt_message(message, text, author=None, receipter=None):
     msg_url = get_message_link(message)
     links = " ".join(extract_links(message.content))
     hasImg = False
+    url = None
 
     emb = discord.Embed(description=text, color=RECEIPT_COLOR)
 
@@ -98,7 +99,7 @@ def receipt_message(message, text, author=None, receipter=None):
         ft_txt = "🧾ed by {}".format(receipter.display_name)
         emb.set_footer(text=ft_txt, icon_url=receipter.avatar_url)
 
-    if not hasImg:
+    if not hasImg and url:
         return links, emb, url
     else:
         return links, emb, None
