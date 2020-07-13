@@ -191,7 +191,7 @@ async def reroute_bot_msg(msg):
     if emb.author and emb.author.name and ("haru" in emb.author.name):
         possible_date = emb.description[:6]
         if possible_date.isdecimal():
-            return OFFICIALBTS_CHANNEL_ID, "to official_bts: " + msg.content
+            return OFFICIALBTS_CHANNEL_ID, msg.content
     
     # check for Big Hit Labels youtube upload
     if emb.author and emb.author.name and ("Big Hit Labels" in emb.author.name):
@@ -204,7 +204,7 @@ async def reroute_bot_msg(msg):
         elif "i-land" in emb.title.lower():
             return ILAND_CHANNEL_ID, msg.content
         elif "bts" in emb.title.lower():
-            return OFFICIALBTS_CHANNEL_ID, "New **BTS** video from **Big Hit Labels** <@&586395910917980161>: " + msg.content
+            return OFFICIALBTS_CHANNEL_ID, "<@&586395910917980161> " + msg.content
         else:
             # if unknown, just post to #officialbts
             return OFFICIALBTS_CHANNEL_ID, msg.content
