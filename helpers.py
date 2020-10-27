@@ -1,5 +1,6 @@
 import time as tm
-from datetime import datetime, timedelta, timezone, date, time
+from datetime import datetime, timedelta, timezone, date
+from datetime import time as dt_time
 import discord
 import json, os, re
 
@@ -112,7 +113,7 @@ def backspace(msg, start):
 # params are in KST
 def time_from_now(hrs, min):
     tomorrow = date.today() + timedelta(days=1)
-    timeobj = time(hour=hrs,minute=min,tzinfo=timezone.utc)
+    timeobj = dt_time(hour=hrs,minute=min,tzinfo=timezone.utc)
     time_to_find = datetime.combine(tomorrow,timeobj)
     now_in_kst = datetime.now(timezone.utc) + timedelta(hours=9)
     diff = time_to_find - now_in_kst
@@ -195,15 +196,16 @@ async def reroute_bot_msg(msg):
     
     # check for Big Hit Labels youtube upload
     if emb.author and emb.author.name and ("Big Hit Labels" in emb.author.name):
-        if "gfriend" in emb.title.lower():
+        title = emb.title.lower()
+        if "gfriend" in title:
             return GG_CHANNEL_ID, msg.content
-        elif "seventeen" in emb.title.lower():
+        elif "seventeen" in title:
             return SVT_CHANNEL_ID, msg.content
-        elif "txt" in emb.title.lower():
+        elif "txt" in title:
             return TXT_CHANNEL_ID, msg.content
-        elif "i-land" in emb.title.lower():
+        elif ("i-land" in title) or ("belift" in title) or ("enhypen" in title):
             return ILAND_CHANNEL_ID, msg.content
-        elif "bts" in emb.title.lower():
+        elif "bts" in title:
             return OFFICIALBTS_CHANNEL_ID, "<@&586395910917980161> " + msg.content
         else:
             # if unknown, just post to #officialbts
@@ -219,8 +221,20 @@ async def reroute_bot_msg(msg):
     return None, None
 
 
+async def change_role_color(msg):
+    code = msg.content
+    role = msg.author.roles[-1]
+    old_color = role.color.value
 
+    if len(code) not in [6,7]:
+        return None, None
+    if len(code) == 7:
+        code = code[1:]
 
+    await role.edit(colour=int("0x"+code, 16))
+    ch_msg = "Successfully changed role color to {}".format(code)
+    dm_msg = "Changed role color from **#{}** to **#{}**".format(hex(old_color)[2:], code)
+    return ch_msg, dm_msg
 
 
 

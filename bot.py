@@ -71,11 +71,24 @@ async def on_message(message):
                 chn = bot.get_channel(int(chn_id))
                 await chn.send(msg)
 
-        # kst bot
-        if bot.kst_regex.search(lowered):
-            msg = kst_converter(lowered)
-            if msg:
-                await message.channel.send(msg)
+        # change color
+        if settings.ROLES_CHANNEL_ID == message.channel.id:
+            ch_msg, dm_msg = await change_role_color(message)
+            if ch_msg:
+                sent = await message.channel.send(ch_msg)
+                await message.author.send(content=dm_msg)
+            else:
+                sent = await message.channel.send("I don't know what that is. Just send a hex code")
+            time.sleep(3)
+            await sent.delete()
+            await message.delete()
+            return
+
+        # kst bot - off
+        # if bot.kst_regex.search(lowered):
+        #     msg = kst_converter(lowered)
+        #     if msg:
+        #         await message.channel.send(msg)
 
         # check for away mentions
         for ment in message.mentions:
