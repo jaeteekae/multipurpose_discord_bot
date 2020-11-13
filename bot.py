@@ -21,8 +21,12 @@ elif settings.TESTING:
     logging.basicConfig(level=logging.INFO)
     cmdprefix = settings.TESTING_PREFIX
 
+intents = discord.Intents.default()
+intents.members = True
+intents.reactions = True
+
 help_cmd = discord.ext.commands.DefaultHelpCommand(no_category="What can Apricot-Flower-Baby do for you")
-bot = commands.Bot(command_prefix=cmdprefix, case_insensitive=True, help_command=help_cmd)
+bot = commands.Bot(command_prefix=cmdprefix, case_insensitive=True, help_command=help_cmd, intents=intents)
 bot.shh = False
 bot.fish_regex = re.compile(r"\bfish")
 bot.kst_regex = re.compile(r"kst\b")
