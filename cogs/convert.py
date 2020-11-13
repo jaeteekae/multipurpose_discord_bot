@@ -329,7 +329,7 @@ class Convert(commands.Cog):
 					total_inches += int(imperial[0:imperial.find("\'")])*12
 					pos = imperial.find("\'") + 1
 				if "^" in imperial:
-					total_inches += int(imperial[pos:imperial.find("^")])
+					total_inches += float(imperial[pos:imperial.find("^")])
 				newargs[0] = str(total_inches)
 				newargs.insert(1, "in")
 			else:
