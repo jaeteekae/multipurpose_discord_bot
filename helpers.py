@@ -221,20 +221,29 @@ async def reroute_bot_msg(msg):
     return None, None
 
 
-async def change_role_color(msg):
+async def change_role_color(msg, author):
     code = msg.content
     role = msg.author.roles[-1]
-    old_color = role.color.value
 
     if len(code) not in [6,7]:
         return None, None
     if len(code) == 7:
         code = code[1:]
 
-    await role.edit(colour=int("0x"+code, 16))
-    ch_msg = "Successfully changed role color to {}".format(code)
-    dm_msg = "Changed role color from **#{}** to **#{}**".format(hex(old_color)[2:], code)
-    return ch_msg, dm_msg
+    old_color_int = role.color.value
+    new_color_int = int("0x"+code, 16)
+    old_color_string = "#"+str(hex(old_color_int)[2:])
+    new_color_string = "#"+str(code)
+
+    await role.edit(colour=new_color_int)
+    ch_msg = "Successfully changed role color to {}".format(new_color_string)
+
+    emb1 = discord.Embed(description=old_color_string, color=old_color_int)
+    emb2 = discord.Embed(description=new_color_string, color=new_color_int)
+    await author.send(content="**Changed role color from:**", embed=emb1)
+    await author.send(content="**to**", embed=emb2)
+
+    return ch_msg
 
 
 

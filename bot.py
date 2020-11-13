@@ -53,6 +53,9 @@ async def on_message(message):
     if "’" in message.content:
         message.content = message.content.replace("’","'")
 
+    if "\"" in message.content:
+        message.content = message.content.replace("\"","^")
+
     if settings.PRODUCTION:
         lowered = message.content.lower()
 
@@ -73,10 +76,9 @@ async def on_message(message):
 
         # change color
         if settings.ROLES_CHANNEL_ID == message.channel.id:
-            ch_msg, dm_msg = await change_role_color(message)
+            ch_msg = await change_role_color(message, message.author)
             if ch_msg:
                 sent = await message.channel.send(ch_msg)
-                await message.author.send(content=dm_msg)
             else:
                 sent = await message.channel.send("I don't know what that is. Just send a hex code")
             time.sleep(3)

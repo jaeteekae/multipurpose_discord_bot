@@ -94,13 +94,15 @@ class Convert(commands.Cog):
 
 		# centimeters
 		if unit in self.short_lenwords_m[:3]:
-			desc = '• {:.1f} in\n• {:.2f} ft'.format(num*0.3937008,num*0.0328084)
+			in_inches = num*0.3937008
+			desc = '• {:.1f} in, or {:.0f}\'{:.1f}"\n• {:.2f} ft'.format(in_inches, in_inches//12, in_inches%12, num*0.0328084)
 		# meters
 		elif unit in self.meterwords:
-			desc = '• {:.0f} in\n• {:.1f} ft'.format(num*39.37008,num*3.28084)
+			in_inches = num*39.37008
+			desc = '• {:.1f} in, or {:.0f}\'{:.1f}"\n• {:.2f} ft'.format(num*39.37008, in_inches//12, in_inches%12, num*3.28084)
 		# inches
 		elif unit in self.short_lenwords_i[:3]:
-			desc = '• {:.1f} cm\n• {:.2f} m\n• {:.2f} ft'.format(num*2.54,num*0.0254,num*0.08333333)
+			desc = '• {:.1f} cm\n• {:.2f} m\n• {:.2f} ft\n• {:.0f}\'{:.1f}"'.format(num*2.54,num*0.0254,num*0.08333333, num//12, num%12)
 		# feet
 		elif unit in self.short_lenwords_i[3:]:
 			desc = '• {:.0f} cm\n• {:.2f} m\n• {:.0f} in'.format(num*30.48,num*0.3048,num*12)
@@ -319,12 +321,24 @@ class Convert(commands.Cog):
 		try:
 			test = float(newargs[0])
 		except:
-			numbre = re.compile('-?\d*\.?\d*')
-			numb = numbre.match(newargs[0]).group()
-			unit = newargs[0][len(numb):]
+			if "\'" in newargs[0] or "^" in newargs[0]:
+				imperial = newargs[0]
+				total_inches = 0
+				pos = 0
+				if "\'" in imperial:
+					total_inches += int(imperial[0:imperial.find("\'")])*12
+					pos = imperial.find("\'") + 1
+				if "^" in imperial:
+					total_inches += int(imperial[pos:imperial.find("^")])
+				newargs[0] = str(total_inches)
+				newargs.insert(1, "in")
+			else:
+				numbre = re.compile('-?\d*\.?\d*')
+				numb = numbre.match(newargs[0]).group()
+				unit = newargs[0][len(numb):]
 
-			newargs[0] = numb
-			newargs.insert(1, unit)
+				newargs[0] = numb
+				newargs.insert(1, unit)
 
 		return newargs
 
