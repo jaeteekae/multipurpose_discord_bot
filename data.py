@@ -80,6 +80,12 @@ class DataObj:
         with open(settings.RECEIPT_FILE,'w') as f:
             json.dump(self.receipts,f)
 
+    def get_user_data(self, idnum):
+        for user in self.bdays:
+            if ('user_id' in user) and (int(user['user_id']) == int(idnum)):
+                return user
+        return None
+
     def remove_old_links(self):
         now = datetime.now()
         old = []
