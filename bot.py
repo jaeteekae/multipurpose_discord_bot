@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 import pdb, re
 
-import settings
+import settings, ao3_scraper
 from helpers import *
 from data import data, session
 # pdb.set_trace()
@@ -89,6 +89,13 @@ async def on_message(message):
             await sent.delete()
             await message.delete()
             return
+
+        # ao3 embed
+        if settings.FANFICTION_CHANNEL_ID == message.channel.id:
+            if "archiveofourown.org/works/" in message.content:
+                emb = ao3_scraper.ao3_embed(message.content)
+                if emb:
+                    await message.channel.send(embed=emb)
 
         # kst bot - off
         # if bot.kst_regex.search(lowered):

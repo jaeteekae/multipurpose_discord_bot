@@ -18,6 +18,9 @@ class TimeConv(commands.Cog):
 					  aliases=["t"])
 	async def timeconvert(self, ctx, *args):
 		args = list(args)
+		if len(args) == 0:
+			args.append("now")
+
 		emb = discord.Embed(color=EMBCOLOR)
 		user = data.get_user_data(ctx.author.id)
 		emb.set_author(name=user["name"] + "'s " + " ".join(args))
@@ -82,7 +85,7 @@ class TimeConv(commands.Cog):
 				try:
 					tz = pytz.timezone(args[-1])
 				except:
-					emb.description = "Sorry idk what that time zone is. Try [one from here.](https://stackoverflow.com/questions/13866926/is-there-a-list-of-pytz-timezones)"
+					emb.description = "Sorry idk what that time zone is. Try [one from here.](https://stackoverflow.com/questions/13866926/is-there-a-list-of-pytz-timezones)\nex. !time 6:30pm Africa/Cairo"
 					await ctx.send(embed=emb)
 					return
 		
