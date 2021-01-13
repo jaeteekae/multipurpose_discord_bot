@@ -9,7 +9,7 @@ decorator==4.4.0
 discord.py==1.5.1
 idna==2.8
 idna-ssl==1.1.0
-lxml==4.3.4
+lxml==4.6.2
 multidict==4.5.2
 numpy==1.15.2
 pytz==2019.1
