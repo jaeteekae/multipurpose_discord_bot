@@ -29,10 +29,8 @@ def ao3_embed(msg):
 
 	# fandoms
 	fandoms = soup.find("dd", {"class": "fandom tags"}).findAll("a")
-	fanstr = ""
-	for f in fandoms:
-		fanstr += "[{}]({}), ".format(f.string, "https://archiveofourown.org"+f['href'])
-	emb.add_field(name="__Fandom__", value=fanstr[:-2], inline=True)
+	fanstr = extract(fandoms)
+	emb.add_field(name="__Fandom__", value=fanstr, inline=True)
 
 	# rating
 	rating = soup.find("dd", {"class": "rating tags"})
@@ -56,26 +54,18 @@ def ao3_embed(msg):
 	# pairings
 	try:
 		pairings = soup.find("dd", {"class": "relationship tags"}).findAll("a")
-		relstr = ""
-		for p in pairings:
-			relstr += "[{}]({}), ".format(p.string, "https://archiveofourown.org"+p['href'])
+		relstr = extract(pairings)
 	except:
-		relstr = "None, "
-	emb.add_field(name="__Relationships__", value=relstr[:-2], inline=False)
+		relstr = "None"
+	emb.add_field(name="__Relationships__", value=relstr, inline=False)
 
 	# tags
 	try:
 		tags = soup.find("dd", {"class": "freeform tags"}).findAll("a")
-		tagstr = ""
-		for i in range(len(tags)):
-			t = tags[i]
-			if len(tagstr) + len(t.string) > 1000:
-				tagstr += "+{}, ".format(len(tags)-i)
-				break
-			tagstr += "{}, ".format(t.string)
+		tagstr = extract(tags)
 	except:
-		tagstr = "None, "
-	emb.add_field(name="__Tags__", value=tagstr[:-2], inline=False)
+		tagstr = "None"
+	emb.add_field(name="__Tags__", value=tagstr, inline=False)
 
 	# summary
 	summary = soup.find("blockquote", {"class": "userstuff"}).get_text()
@@ -85,6 +75,23 @@ def ao3_embed(msg):
 		emb.add_field(name="__Summary__", value=summary[:1010]+"...", inline=False)
 
 	return emb
+
+def extract(words):
+	plain_str = ""
+	link_str = ""
+
+	for i in range(len(words)):
+		w = words[i]
+		if len(plain_str) + len(w.string) > 1000:
+			plain_str += "+{}, ".format(len(words)-i)
+			break
+		plain_str += "{}, ".format(w.string)
+		link_str += "[{}]({}), ".format(w.string, "https://archiveofourown.org"+w['href'])
+
+	if len(link_str) > 1024:
+		return plain_str[:-2]
+	else:
+		return link_str[:-2]
 
 def get_url(msg):
 	st = msg.find("archiveofourown.org")
