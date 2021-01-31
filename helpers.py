@@ -219,7 +219,7 @@ async def reroute_bot_msg(msg):
         for i in ignore:
             if i in emb.description:
                 return None, None
-        return OFFICIALBTS_CHANNEL_ID, msg.content
+        return OFFICIALBTS_CHANNEL_ID, "<@&586395910917980161> " + msg.content
 
     # print("Embed Title: ", emb.title)
     # print("Embed description: ", emb.description)
