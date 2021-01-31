@@ -187,8 +187,9 @@ async def reroute_bot_msg(msg):
         msg = await msg.channel.fetch_message(msg.id)
         tries += 1
 
-    # check for haru weverse translation
     emb = msg.embeds[0]
+
+    # check for haru weverse translation
     if emb.author and emb.author.name and ("haru" in emb.author.name):
         possible_date = emb.description[:6]
         if possible_date.isdecimal():
@@ -210,6 +211,15 @@ async def reroute_bot_msg(msg):
         else:
             # if unknown, just post to #officialbts
             return OFFICIALBTS_CHANNEL_ID, msg.content
+
+    # check for BigHit twitter upload & weed out spam
+    if emb.author and emb.author.name and ("@BigHitEnt" in emb.author.name):
+        #         article, broadcast
+        ignore = ["[기사]", "[방송]"]
+        for i in ignore:
+            if i in emb.description:
+                return None, None
+        return OFFICIALBTS_CHANNEL_ID, msg.content
 
     # print("Embed Title: ", emb.title)
     # print("Embed description: ", emb.description)
