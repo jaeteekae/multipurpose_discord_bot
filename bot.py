@@ -78,6 +78,13 @@ async def on_message(message):
                 chn = bot.get_channel(int(chn_id))
                 await chn.send(msg)
 
+        # repost links for embed
+        if settings.OFFICIALBTS_CHANNEL_ID == message.channel.id:
+            chn_id, msg = await repost_link_bot_msg(message)
+            if msg:
+                chn = bot.get_channel(int(chn_id))
+                await chn.send(msg)
+
         # change color
         if settings.ROLES_CHANNEL_ID == message.channel.id:
             ch_msg = await change_role_color(message, message.author)

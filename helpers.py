@@ -22,7 +22,7 @@ def is_image(url):
     return False
 
 def extract_links(text):
-    pieces = text.split(' ')
+    pieces = text.split()
     links = list(filter(lambda x: validators.url(x), pieces))
     without_imgs = list(filter(lambda x: (not is_image(x)) and ('tenor.com' not in x), links))
     return without_imgs
@@ -231,6 +231,29 @@ async def reroute_bot_msg(msg):
     # print("Embed author: ", emb.author)
     # print("Embed author name: ", emb.author.name)
     # print("\n\n")
+    return None, None
+
+
+async def repost_link_bot_msg(msg):
+    tries = 0
+
+    # try 3 times to get embed
+    while len(msg.embeds) == 0:
+        if tries >= 3:
+            return MODS_CHANNEL_ID, "failed: " + msg.content
+        tm.sleep(1)
+        msg = await msg.channel.fetch_message(msg.id)
+        tries += 1
+
+    emb = msg.embeds[0]
+
+    # check for @BTS_BigHit
+    if emb.author and emb.author.name and ("@bts_bighit" in emb.author.name):
+        sanitized = emb.description.replace('(','').replace(')','')
+        links = "\n".join(extract_links(sanitized))
+        if links:
+            return OFFICIALBTS_CHANNEL_ID, links
+    
     return None, None
 
 
