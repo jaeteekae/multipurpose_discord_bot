@@ -68,7 +68,7 @@ def ao3_embed(msg):
 	emb.add_field(name="__Tags__", value=tagstr, inline=False)
 
 	# summary
-	summary = soup.find("blockquote", {"class": "userstuff"}).get_text()
+	summary = soup.find("div", class_= "summary module").find("blockquote", {"class": "userstuff"}).get_text()
 	if len(summary) < 1010:
 		emb.add_field(name="__Summary__", value=summary, inline=False)
 	else:
