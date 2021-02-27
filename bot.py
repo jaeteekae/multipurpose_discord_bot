@@ -187,15 +187,15 @@ async def on_message_edit(before, after):
     if before.content != after.content:
         await bot.process_commands(after)  
 
-@bot.event
-async def on_member_update(before, after):
-    bday_role = data.guild.get_role(716014074009485332)
-    if (bday_role in before.roles) and (bday_role not in after.roles):
-        bday_channel = bot.get_channel(settings.BIRTHDAY_CHANNEL_ID)
-        await bday_channel.send("{} is gone... for now 👀".format(after.display_name))
-    if (bday_role not in before.roles) and (bday_role in after.roles):
-        bday_channel = bot.get_channel(settings.BIRTHDAY_CHANNEL_ID)
-        await bday_channel.send("{} HAS ARRIVED 🥳".format(after.display_name))
+# @bot.event
+# async def on_member_update(before, after):
+#     bday_role = data.guild.get_role(716014074009485332)
+#     if (bday_role in before.roles) and (bday_role not in after.roles):
+#         bday_channel = bot.get_channel(settings.BIRTHDAY_CHANNEL_ID)
+#         await bday_channel.send("{} is gone... for now 👀".format(after.display_name))
+#     if (bday_role not in before.roles) and (bday_role in after.roles):
+#         bday_channel = bot.get_channel(settings.BIRTHDAY_CHANNEL_ID)
+#         await bday_channel.send("{} HAS ARRIVED 🥳".format(after.display_name))
 
 @bot.event
 async def dm(ctx):
@@ -218,10 +218,32 @@ async def on_ready():
                  'emojis': {}}
         data.set_stats(stats)
 
+async def dailies():
+    data.turnover_stats()
+
+    # Birthday checking
+    now = datetime.now()
+    year = now.year
+
+    for person in data.bdays:
+        dob = person['dob'].split('/')
+        mon = int(dob[0])
+        day = int(dob[1])
+        bday = datetime(month=mon, day=day, year=year)
+        diff = bday - now
+
+        if diff.days == 30:
+            chid = int(person['bday_chan_id'])
+            if chid == 0: # not a birthdayer
+                return
+            ch = bot.get_channel(chid)
+            await ch.send("free me <@!246457096718123019> (T-30 days to birthday)")
+
+
 if settings.PRODUCTION:
     scheduler = BackgroundScheduler()
     scheduler.add_job(data.write_to_disk, 'cron', minute='*/5')
-    scheduler.add_job(data.turnover_stats, 'cron', hour=0, minute=1)
+    scheduler.add_job(dailies, 'cron', hour=0, minute=1)
     scheduler.add_job(data.turnover_hour, 'cron', minute=59)
     scheduler.start()
 
