@@ -1,7 +1,8 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
+import asyncio
 
 import settings
 from data import data
@@ -48,6 +49,37 @@ class Birthdays(commands.Cog):
 				msg = "🎊 The next birthday is " + person['name'] + "'s! 🎊\n" + datestr
 				emb = discord.Embed(description=msg,color=BDAY_COLOR)
 				await ctx.send(embed=emb)
+
+	@tasks.loop(hours=24)
+	async def check_for_birthday(self):
+		now = datetime.now()
+		year = now.year
+
+		for person in data.bdays:
+			dob = person['dob'].split('/')
+			mon = int(dob[0])
+			day = int(dob[1])
+			bday = datetime(month=mon, day=day, year=year)
+			diff = bday - now
+
+			if diff.days == 30:
+				chid = int(person['bday_chan_id'])
+				if chid == 0: # not a birthdayer
+					return
+				ch = self.bot.get_channel(chid)
+				await ch.send("free me <@!246457096718123019> (T-30 days to birthday)")
+
+	@check_for_birthday.before_loop
+	async def before_bday_check(self):
+		hour = 0
+		minute = 1
+		await bot.wait_until_ready()
+		now = datetime.now()
+		future = datetime.datetime(now.year, now.month, now.day, hour, minute)
+		if now.hour >= hour and now.minute > minute:
+			future += timedelta(days=1)
+		await asyncio.sleep((future-now).seconds)
+
 
 def setup(bot):
 	bot.add_cog(Birthdays(bot))

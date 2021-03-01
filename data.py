@@ -101,7 +101,7 @@ class DataObj:
         new_day = {}
         self.stats['days'].append(new_day)
 
-        if len(self.stats['days']>30):
+        if len(self.stats['days'])>30:
             oldest_day = self.stats['days'][0]
             self.stats['days'] = self.stats['days'][1:]
 
