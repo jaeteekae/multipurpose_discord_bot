@@ -11,6 +11,7 @@ from helpers import *
 class Birthdays(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
+		self.check_for_birthday.start()
 
 	@commands.command(help="Check the next birthday in the chat")
 	async def birthday(self, ctx, *args):
@@ -73,9 +74,9 @@ class Birthdays(commands.Cog):
 	async def before_bday_check(self):
 		hour = 0
 		minute = 1
-		await bot.wait_until_ready()
+		await self.bot.wait_until_ready()
 		now = datetime.now()
-		future = datetime.datetime(now.year, now.month, now.day, hour, minute)
+		future = datetime(now.year, now.month, now.day, hour, minute)
 		if now.hour >= hour and now.minute > minute:
 			future += timedelta(days=1)
 		await asyncio.sleep((future-now).seconds)
