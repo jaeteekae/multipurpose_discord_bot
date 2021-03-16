@@ -24,7 +24,7 @@ class TimeConv(commands.Cog):
 		emb = discord.Embed(color=EMBCOLOR)
 		user = data.get_user_data(ctx.author.id)
 		emb.set_author(name=user["name"] + "'s " + " ".join(args))
-		timestr = args[0].replace(":","").replace(" ","").lower()
+		timestr = args[0].replace(":","").replace(".","").lower()
 		now = datetime.now()
 		add = 0
 		hours = 0
@@ -35,6 +35,7 @@ class TimeConv(commands.Cog):
 
 		# check for AM
 		if (len(timestr) > 1) and (timestr[-2] == 'a'):
+			timestr = timestr[:-2]
 			found_am = True
 		if (len(args) > 1) and ('am' in args[1].lower()):
 			found_am = True
@@ -53,10 +54,28 @@ class TimeConv(commands.Cog):
 			args.append(timestr[-3:])
 			timestr = timestr[:-3]
 
+		# use default tz for user
+		if (len(args) == 1) or (args[-1].lower() in ['am','pm']):
+			tz = pytz.timezone(user['timezone'])
+		# use supplied tz
+		else:
+			if args[-1].lower() == 'kst':
+				tz = pytz.timezone('Asia/Seoul')
+			elif args[-1].lower() == 'nay':
+				tz = pytz.timezone('Chile/Continental')
+			else:
+				try:
+					tz = pytz.timezone(args[-1])
+				except:
+					emb.description = "Sorry idk what that time zone is. Try [one from here.](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)\nex. !time 6:30pm Africa/Cairo"
+					await ctx.send(embed=emb)
+					return
+
 		# get hours and minutes
 		if "now" in args[0].lower():
 			hours = now.hour
 			minutes = now.minute
+			tz = pytz.timezone("US/Eastern")
 		else:
 			if (len(timestr) == 2) or (len(timestr) == 1):
 				hours = int(timestr)
@@ -73,21 +92,6 @@ class TimeConv(commands.Cog):
 			elif found_pm:
 				add = 0
 		hours += add
-
-		# use default tz for user
-		if (len(args) == 1) or (args[-1].lower() in ['am','pm']):
-			tz = pytz.timezone(user['timezone'])
-		# use supplied tz
-		else:
-			if args[-1].lower() == 'kst':
-				tz = pytz.timezone('Asia/Seoul')
-			else:
-				try:
-					tz = pytz.timezone(args[-1])
-				except:
-					emb.description = "Sorry idk what that time zone is. Try [one from here.](https://stackoverflow.com/questions/13866926/is-there-a-list-of-pytz-timezones)\nex. !time 6:30pm Africa/Cairo"
-					await ctx.send(embed=emb)
-					return
 		
 		timeobj = tz.localize(datetime(now.year, now.month, now.day, hour=hours, minute=minutes))
 
