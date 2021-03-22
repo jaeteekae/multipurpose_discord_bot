@@ -60,74 +60,84 @@ async def on_message(message):
     if "\"" in message.content:
         message.content = message.content.replace("\"","^")
 
-    if settings.PRODUCTION:
-        lowered = message.content.lower()
+    lowered = message.content.lower()
 
-        # if bot.shh:
-        #     shher = bot.get_cog('Shh')
-        #     if (await shher.unnacceptable_msg(message)):
-        #         await message.delete()
+    # if bot.shh:
+    #     shher = bot.get_cog('Shh')
+    #     if (await shher.unnacceptable_msg(message)):
+    #         await message.delete()
 
+    # reroute notifs
+    if settings.LC_CHANNEL_ID == message.channel.id:
+        chn_id, msg = await reroute_bot_msg(message)
+        if msg:
+            chn = bot.get_channel(int(chn_id))
+            await chn.send(msg)
+
+    # repost links for embed
+    if settings.OFFICIALBTS_CHANNEL_ID == message.channel.id:
+        chn_id, msg = await repost_link_bot_msg(message)
+        if msg:
+            chn = bot.get_channel(int(chn_id))
+            await chn.send(msg)
+
+    # change color
+    if settings.ROLES_CHANNEL_ID == message.channel.id:
+        ch_msg = await change_role_color(message, message.author)
+        if ch_msg:
+            sent = await message.channel.send(ch_msg)
+        else:
+            sent = await message.channel.send("I don't know what that is. Just send a hex code")
+        time.sleep(3)
+        await sent.delete()
+        await message.delete()
+        return
+
+    # ao3 embed
+    if (settings.FANFICTION_CHANNEL_ID == message.channel.id) or (settings.GAMING_CHANNEL_ID == message.channel.id):
+        if "archiveofourown.org/works/" in message.content:
+            emb = ao3_scraper.ao3_embed(message.content)
+            if emb:
+                await message.channel.send(embed=emb)
+
+    # DISABLED: kst bot
+    # if bot.kst_regex.search(lowered):
+    #     msg = kst_converter(lowered)
+    #     if msg:
+    #         await message.channel.send(msg)
+
+    # check for away mentions
+    for ment in message.mentions:
+        if str(ment.id) in data.away:
+            title,desc = send_away_msg(ment)
+            emb = discord.Embed(title=title,description=desc,color=settings.AWAY_COLOR)
+            await message.channel.send(embed=emb)
+
+    # only do these if the message is sent from the gc server
+    if message.guild.id == settings.GC_GUILD_ID:
+        # DISABLED: check for links in general
+        # if message.channel.name == 'general':
+        #     new_links = extract_new_links(message.content)
+        #     link_channel = bot.get_channel(settings.LC_CHANNEL_ID)
+        #     for l in new_links:
+        #         await link_channel.send(l)
+
+        # fish cop
         if bot.fish_regex.search(lowered):
             await message.channel.send("👮‍♀️ You seem to have said **_fish_** when you meant **_swim thing_**.\nPlease don't make this mistake again.")
 
-        # reroute notifs
-        if settings.LC_CHANNEL_ID == message.channel.id:
-            chn_id, msg = await reroute_bot_msg(message)
-            if msg:
-                chn = bot.get_channel(int(chn_id))
-                await chn.send(msg)
+        # track stats
+        data.track_message(str(message.channel.id),str(message.author.id))
+        data.track_emoji(message.content)
 
-        # repost links for embed
-        if settings.OFFICIALBTS_CHANNEL_ID == message.channel.id:
-            chn_id, msg = await repost_link_bot_msg(message)
-            if msg:
-                chn = bot.get_channel(int(chn_id))
-                await chn.send(msg)
-
-        # change color
-        if settings.ROLES_CHANNEL_ID == message.channel.id:
-            ch_msg = await change_role_color(message, message.author)
-            if ch_msg:
-                sent = await message.channel.send(ch_msg)
-            else:
-                sent = await message.channel.send("I don't know what that is. Just send a hex code")
-            time.sleep(3)
-            await sent.delete()
+    # only do these if the message is sent my personal server
+    if message.guild.id == settings.PERSONAL_GUILD_ID:
+        if "[retweeted by svt_fancafe]" in lowered:
             await message.delete()
-            return
 
-        # ao3 embed
-        if settings.FANFICTION_CHANNEL_ID == message.channel.id:
-            if "archiveofourown.org/works/" in message.content:
-                emb = ao3_scraper.ao3_embed(message.content)
-                if emb:
-                    await message.channel.send(embed=emb)
-
-        # kst bot - off
-        # if bot.kst_regex.search(lowered):
-        #     msg = kst_converter(lowered)
-        #     if msg:
-        #         await message.channel.send(msg)
-
-        # check for away mentions
-        for ment in message.mentions:
-            if str(ment.id) in data.away:
-                title,desc = send_away_msg(ment)
-                emb = discord.Embed(title=title,description=desc,color=settings.AWAY_COLOR)
-                await message.channel.send(embed=emb)
-
-        # only do these if the message is sent from a server
-        if message.guild:
-            # check for links in general
-            if message.channel.name == 'general':
-                new_links = extract_new_links(message.content)
-                link_channel = bot.get_channel(settings.LC_CHANNEL_ID)
-                for l in new_links:
-                    await link_channel.send(l)
-            # track stats
-            data.track_message(str(message.channel.id),str(message.author.id))
-            data.track_emoji(message.content)
+    # to prevent prefix overlap with Chuu bot
+    if message.channel.id == settings.DJ_CHANNEL_ID:
+        return
 
     # execute prefix commands
     await bot.process_commands(message)
