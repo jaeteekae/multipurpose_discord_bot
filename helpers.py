@@ -195,8 +195,8 @@ async def reroute_bot_msg(msg):
         if possible_date.isdecimal():
             return OFFICIALBTS_CHANNEL_ID, msg.content
     
-    # check for Big Hit Labels youtube upload
-    if emb.author and emb.author.name and ("Big Hit Labels" in emb.author.name):
+    # check for Hybe Labels youtube upload
+    if emb.author and emb.author.name and ("HYBE LABELS" in emb.author.name):
         title = emb.title.lower()
         if "gfriend" in title:
             return GG_CHANNEL_ID, msg.content
@@ -213,7 +213,7 @@ async def reroute_bot_msg(msg):
             return OFFICIALBTS_CHANNEL_ID, msg.content
 
     # check for BigHit twitter upload & weed out spam
-    if emb.author and emb.author.name and ("@BigHitEnt" in emb.author.name):
+    if emb.author and emb.author.name and ("@BIGHIT_MUSIC" in emb.author.name):
         #         article, broadcast
         ignore = ["[기사]", "[방송]"]
         for i in ignore:
@@ -221,6 +221,8 @@ async def reroute_bot_msg(msg):
                 return None, None
         if "#BTS" in emb.description:
             return OFFICIALBTS_CHANNEL_ID, "<@&586395910917980161> " + msg.content
+        elif "#TOMORROW_X_TOGETHER" in emb.description:
+            return TXT_CHANNEL_ID, msg.content
         else:
             return OFFICIALBTS_CHANNEL_ID, msg.content
 
