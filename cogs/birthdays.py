@@ -68,7 +68,7 @@ class Birthdays(commands.Cog):
 				if chid == 0: # not a birthdayer
 					return
 				ch = self.bot.get_channel(chid)
-				await ch.send("free me <@!246457096718123019> (T-30 days to birthday)")
+				#await ch.send("free me <@!246457096718123019> (T-30 days to birthday)")
 
 	@check_for_birthday.before_loop
 	async def before_bday_check(self):
